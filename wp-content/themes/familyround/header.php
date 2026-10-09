@@ -12,7 +12,10 @@ $fr_shop_url = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_
 
 <header class="fr-site-header">
 	<div class="fr-container fr-header-inner">
-		<a class="fr-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">FamilyRound</a>
+		<a class="fr-logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/images/logo-icon.png' ) ); ?>" alt="" class="fr-logo-mark" width="28" height="27">
+			FamilyRound
+		</a>
 		<nav class="fr-nav">
 			<?php
 			wp_nav_menu( array(

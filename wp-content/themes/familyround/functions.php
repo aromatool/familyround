@@ -40,7 +40,8 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( file_exists( $asset_path ) ) {
 		wp_enqueue_script( 'familyround-islands', get_theme_file_uri( 'assets/dist/main.js' ), array(), FR_THEME_VERSION, true );
 		wp_localize_script( 'familyround-islands', 'frData', array(
-			'restUrl' => esc_url_raw( rest_url( 'familyround/v1' ) ),
+			'restUrl'   => esc_url_raw( rest_url( 'familyround/v1' ) ),
+			'assetsUrl' => get_theme_file_uri( 'assets/images/' ),
 		) );
 	}
 

@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
-const CHALLENGES = [
-	'Priviți-vă în ochi 30 de secunde, fără să vorbiți.',
-	'Gătiți ceva nou, împreună, fără rețetă.',
-	'Faceți un picnic în living, pe jos.',
-	'Spuneți-vă, pe rând, o amintire preferată.',
-];
+const FRONTS = ['card-19-arbore.jpg', 'card-01-drumetie.jpg', 'card-29-karaoke.jpg', 'card-11-scrisoare.jpg'];
 
 export default function SignatureCard() {
 	const sceneRef = useRef(null);
@@ -15,7 +10,9 @@ export default function SignatureCard() {
 	const quickRotX = useRef(null);
 	const quickRotY = useRef(null);
 	const [flipped, setFlipped] = useState(false);
-	const [challengeIndex, setChallengeIndex] = useState(0);
+	const [frontIndex, setFrontIndex] = useState(0);
+
+	const assetsUrl = (typeof window !== 'undefined' && window.frData && window.frData.assetsUrl) || '';
 
 	useEffect(() => {
 		gsap.set(tiltRef.current, { rotation: -3 });
@@ -29,8 +26,8 @@ export default function SignatureCard() {
 			const rect = scene.getBoundingClientRect();
 			const px = (e.clientX - rect.left) / rect.width - 0.5;
 			const py = (e.clientY - rect.top) / rect.height - 0.5;
-			quickRotY.current(px * 16);
-			quickRotX.current(py * -16);
+			quickRotY.current(px * 14);
+			quickRotX.current(py * -14);
 		};
 		const onLeave = () => {
 			quickRotX.current(0);
@@ -48,7 +45,7 @@ export default function SignatureCard() {
 	const handleClick = () => {
 		const next = !flipped;
 		if (next) {
-			setChallengeIndex((i) => (i + 1) % CHALLENGES.length);
+			setFrontIndex((i) => (i + 1) % FRONTS.length);
 		}
 		gsap.to(flipRef.current, { rotationY: next ? 180 : 0, duration: 0.6, ease: 'power2.inOut' });
 		setFlipped(next);
@@ -59,15 +56,14 @@ export default function SignatureCard() {
 			<div className="fr-card-tilt" ref={tiltRef}>
 				<div className="fr-card-flip" ref={flipRef} onClick={handleClick} role="button" tabIndex={0}>
 					<div className="fr-card-face fr-card-face--front">
-						<span className="fr-card-mark">FamilyRound</span>
-						<span className="fr-card-number">Cartonaș 01 / 30</span>
-						<span className="fr-card-hint">Atinge pentru a-l întoarce</span>
+						<img src={`${assetsUrl}card-back.jpg`} alt="Verso cartonaș FamilyRound" />
 					</div>
 					<div className="fr-card-face fr-card-face--back">
-						<p>{CHALLENGES[challengeIndex]}</p>
+						<img src={`${assetsUrl}${FRONTS[frontIndex]}`} alt="O provocare FamilyRound" />
 					</div>
 				</div>
 			</div>
+			<p className="fr-card-hint">Atinge cartonașul</p>
 		</div>
 	);
 }
