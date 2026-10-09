@@ -347,6 +347,53 @@ body.admin-bar .fr-site-header {
 	opacity: 0.55;
 }
 
+/* How it works */
+
+.fr-how {
+	background: var(--fr-cream);
+	padding: 96px 0;
+	text-align: center;
+}
+
+.fr-how h2 {
+	font-size: clamp(26px, 4vw, 36px);
+	font-weight: 500;
+	margin-bottom: 56px;
+}
+
+.fr-how-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 40px;
+	text-align: left;
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.fr-how-step {
+	flex: 1 1 260px;
+}
+
+.fr-how-number {
+	display: block;
+	font-family: var(--fr-font-serif);
+	font-size: 36px;
+	color: var(--fr-gold);
+	margin-bottom: 12px;
+}
+
+.fr-how-step h3 {
+	font-size: 19px;
+	margin-bottom: 10px;
+}
+
+.fr-how-step p {
+	font-size: 15px;
+	color: var(--fr-muted);
+	line-height: 1.6;
+	margin: 0;
+}
+
 /* Statement — full-bleed editorial pause */
 
 .fr-statement {
