@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_THEME_VERSION', '0.2.0' );
+define( 'FR_THEME_VERSION', '0.3.0' );
 
 function fr_challenge_cards() {
 	return array(
@@ -62,7 +62,7 @@ add_filter( 'wp_resource_hints', function ( $urls, $relation_type ) {
 add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style(
 		'familyround-fonts',
-		'https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
+		'https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,900;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
 		array(),
 		null
 	);

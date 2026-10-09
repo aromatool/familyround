@@ -17,7 +17,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 	<div class="fr-container fr-hero-grid">
 		<div class="fr-hero-text">
 			<span class="fr-eyebrow">FamilyRound</span>
-			<h1>Faceți lucruri împreună.<br>Păstrați ce rămâne.</h1>
+			<h1>Faceți lucruri <em>împreună</em>.<br>Păstrați ce rămâne.</h1>
 			<p>Construim jocuri și inițiative care aduc familiile mai aproape — departe de ecrane, mai aproape unii de alții. Primul nostru joc e deja aici.</p>
 			<div class="fr-hero-cta-block">
 				<a class="fr-cta" href="#jocuri">Descoperă jocurile FamilyRound</a>
@@ -38,6 +38,13 @@ if ( function_exists( 'wc_get_products' ) ) {
 		</div>
 	</div>
 </section>
+
+<div class="fr-ribbon">
+	<div class="fr-container fr-ribbon-inner">
+		<span>Din fiecare joc, <strong>5 lei</strong> merg în Pușculița FamilyRound.</span>
+		<a href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">Vezi cum →</a>
+	</div>
+</div>
 
 <section class="fr-pillar fr-reveal" id="jocuri">
 	<div class="fr-container fr-pillar-grid">

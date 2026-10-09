@@ -242,9 +242,16 @@ body.admin-bar .fr-site-header {
 }
 
 .fr-hero-text h1 {
-	font-size: clamp(36px, 5vw, 58px);
-	font-weight: 500;
+	font-size: clamp(38px, 5.4vw, 62px);
+	font-weight: 600;
+	line-height: 1.12;
 	color: var(--fr-green);
+}
+
+.fr-hero-text h1 em {
+	font-style: italic;
+	font-weight: 500;
+	color: var(--fr-gold);
 }
 
 .fr-hero-text p {
@@ -292,6 +299,38 @@ body.admin-bar .fr-site-header {
 
 .fr-hero-micro li:first-child {
 	padding-left: 0;
+}
+
+.fr-ribbon {
+	background: var(--fr-green-dark);
+	color: var(--fr-cream);
+}
+
+.fr-ribbon-inner {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+	padding: 14px 0;
+	font-size: 14px;
+	text-align: center;
+}
+
+.fr-ribbon-inner strong {
+	color: var(--fr-gold-light);
+}
+
+.fr-ribbon-inner a {
+	color: var(--fr-gold-light);
+	font-weight: 600;
+	text-decoration: none;
+	border-bottom: 1px solid currentColor;
+	padding-bottom: 1px;
+}
+
+.fr-ribbon-inner a:hover {
+	color: var(--fr-cream);
 }
 
 .fr-hero-micro li:first-child::before {
