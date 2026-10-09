@@ -3,6 +3,39 @@ get_header();
 
 $shop_url   = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/magazin' );
 $images_url = get_theme_file_uri( 'assets/images/' );
+
+$fr_cards = array(
+	1  => 'Drumeție',
+	2  => 'Picnic',
+	3  => 'Comoara din Natură',
+	4  => 'Planta care Crește cu Voi',
+	5  => 'Cu Cortul în Sufragerie',
+	6  => 'Povești la Lumina Lanternei',
+	7  => 'Inversați Rolul pentru o Zi',
+	8  => 'Coșul cu Surprize',
+	9  => 'Expediția cu Monedă',
+	10 => 'Refaceți o Fotografie Veche',
+	11 => 'Scrisoarea de Peste un An',
+	12 => 'Amprenta Familiei',
+	13 => 'Călătorie în Copilăria Părinților',
+	14 => 'Misiunea Face Lumea mai Frumoasă',
+	15 => 'O Excursie cu Trenul',
+	16 => 'Surprindeți Răsăritul Împreună',
+	17 => 'Construim un Vehicul',
+	18 => 'Zbor cu Zmeie',
+	19 => 'Arborele Genealogic',
+	20 => 'O Zi la Planetariu sau Observator',
+	21 => 'Ziua în Care Construiți Jucării',
+	22 => 'Din Natură în Borcan',
+	23 => 'Zi de Magie',
+	24 => 'Construiți o Plută',
+	25 => 'Restaurant Familie',
+	26 => 'Lăsați Ceva în Urmă',
+	27 => 'Vânătoare de Comori',
+	28 => 'Faceți o Surpriză Bunicilor',
+	29 => 'Karaoke',
+	30 => 'Blazonul Familiei',
+);
 ?>
 
 <section class="fr-hero fr-texture">
@@ -43,21 +76,17 @@ $images_url = get_theme_file_uri( 'assets/images/' );
 	</div>
 </section>
 
-<section class="fr-examples fr-reveal">
-	<div class="fr-container">
-		<span class="fr-eyebrow">Trei din cele 30</span>
+<section class="fr-gallery fr-reveal">
+	<div class="fr-container fr-gallery-head">
+		<span class="fr-eyebrow">Toate cele 30</span>
 		<h2>Unele sunt simple, altele vă trimit într-o aventură</h2>
-		<div class="fr-examples-grid">
-			<figure class="fr-example-card">
-				<img src="<?php echo esc_url( $images_url . 'card-19-arbore.jpg' ); ?>" alt="Cartonaș FamilyRound — Arborele genealogic">
+	</div>
+	<div class="fr-gallery-track">
+		<?php foreach ( $fr_cards as $num => $title ) : ?>
+			<figure class="fr-gallery-card">
+				<img src="<?php echo esc_url( $images_url . 'card-' . str_pad( $num, 2, '0', STR_PAD_LEFT ) . '.jpg' ); ?>" alt="Cartonaș FamilyRound nr. <?php echo esc_attr( $num ); ?> — <?php echo esc_attr( $title ); ?>" loading="lazy">
 			</figure>
-			<figure class="fr-example-card">
-				<img src="<?php echo esc_url( $images_url . 'card-11-scrisoare.jpg' ); ?>" alt="Cartonaș FamilyRound — Scrisoarea de peste un an">
-			</figure>
-			<figure class="fr-example-card">
-				<img src="<?php echo esc_url( $images_url . 'card-29-karaoke.jpg' ); ?>" alt="Cartonaș FamilyRound — Karaoke">
-			</figure>
-		</div>
+		<?php endforeach; ?>
 	</div>
 </section>
 
@@ -76,6 +105,14 @@ $images_url = get_theme_file_uri( 'assets/images/' );
 			</ul>
 			<a class="fr-cta" href="<?php echo esc_url( $shop_url ); ?>">Comandă acum — 111 lei</a>
 		</div>
+	</div>
+</section>
+
+<section class="fr-story fr-reveal">
+	<div class="fr-container">
+		<span class="fr-eyebrow">Povestea noastră</span>
+		<h2>De ce există FamilyRound</h2>
+		<p class="fr-story-text">Am pornit de la o întrebare simplă: cum lăsăm telefoanele deoparte și petrecem timp real, împreună, ca familie? Am scris 30 de provocări, le-am testat cu propriile noastre familii, și am construit o cutie pe care chiar vrem s-o ținem pe masa din sufragerie.</p>
 	</div>
 </section>
 

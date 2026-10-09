@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
-const FRONTS = ['card-19-arbore.jpg', 'card-01-drumetie.jpg', 'card-29-karaoke.jpg', 'card-11-scrisoare.jpg'];
+const FRONTS = ['card-19.jpg', 'card-01.jpg', 'card-29.jpg', 'card-11.jpg'];
 
 export default function SignatureCard() {
 	const sceneRef = useRef(null);

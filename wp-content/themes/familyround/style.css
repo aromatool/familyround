@@ -380,53 +380,72 @@ body.admin-bar .fr-site-header {
 	margin: 0;
 }
 
-/* Example cards */
+/* Full card gallery — horizontal scroll, all 30 */
 
-.fr-examples {
-	padding: 24px 0 96px;
-	text-align: center;
+.fr-gallery {
+	padding: 24px 0 88px;
 }
 
-.fr-examples h2 {
+.fr-gallery-head {
+	text-align: center;
+	margin-bottom: 36px;
+}
+
+.fr-gallery-head h2 {
 	max-width: 560px;
-	margin: 10px auto 48px;
+	margin: 10px auto 0;
 	font-size: clamp(24px, 3.4vw, 32px);
 	font-weight: 500;
 }
 
-.fr-examples-grid {
+.fr-gallery-track {
 	display: flex;
-	gap: 32px;
-	justify-content: center;
-	flex-wrap: wrap;
+	gap: 20px;
+	overflow-x: auto;
+	scroll-snap-type: x proximity;
+	padding: 4px 24px 20px;
+	-webkit-overflow-scrolling: touch;
 }
 
-.fr-example-card {
+.fr-gallery-track::-webkit-scrollbar {
+	height: 6px;
+}
+
+.fr-gallery-track::-webkit-scrollbar-thumb {
+	background: var(--fr-cream-dark);
+	border-radius: 999px;
+}
+
+.fr-gallery-card {
+	flex: 0 0 auto;
+	width: 140px;
 	margin: 0;
-	width: 220px;
-	border-radius: 14px;
+	scroll-snap-align: start;
+	border-radius: 10px;
 	overflow: hidden;
 	box-shadow: var(--fr-shadow-soft);
-	transform: rotate(-2deg);
-	transition: transform 0.25s ease;
 }
 
-.fr-example-card:nth-child(2) {
-	transform: rotate(1.5deg);
-}
-
-.fr-example-card:nth-child(3) {
-	transform: rotate(-1deg);
-}
-
-.fr-example-card:hover {
-	transform: rotate(0deg) translateY(-4px);
-}
-
-.fr-example-card img {
+.fr-gallery-card img {
 	display: block;
 	width: 100%;
 	height: auto;
+}
+
+/* Our story */
+
+.fr-story {
+	padding: 88px 0;
+	text-align: center;
+	background: var(--fr-cream-dark);
+}
+
+.fr-story-text {
+	max-width: 620px;
+	margin: 18px auto 0;
+	font-size: 17px;
+	color: var(--fr-ink);
+	line-height: 1.7;
 }
 
 /* Ce găsești în cutie */
