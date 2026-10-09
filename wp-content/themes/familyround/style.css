@@ -213,7 +213,7 @@ body.admin-bar .fr-site-header {
 }
 
 .fr-hero-text {
-	flex: 1 1 440px;
+	flex: 1 1 420px;
 	position: relative;
 }
 
@@ -338,9 +338,18 @@ body.admin-bar .fr-site-header {
 }
 
 .fr-hero-card {
-	flex: 1 1 320px;
+	flex: 1.15 1 440px;
 	display: flex;
 	justify-content: center;
+}
+
+.fr-hero-photo {
+	width: 100%;
+	max-width: 560px;
+	height: auto;
+	display: block;
+	border-radius: 18px;
+	box-shadow: var(--fr-shadow-soft);
 }
 
 .fr-card-stack-wrap {
