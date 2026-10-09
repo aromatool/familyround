@@ -864,20 +864,6 @@ body.admin-bar .fr-site-header {
 	}
 }
 
-/* Scroll reveal — animat de GSAP ScrollTrigger (src/scroll-reveal.js).
-   Starea inițială e doar un fallback anti-FOUC; dacă bundle-ul React nu
-   se încarcă, assets/interactions.js adaugă .is-visible direct. */
-
-.fr-reveal {
-	opacity: 0;
-	transform: translateY(28px);
-}
-
-.fr-reveal.is-visible {
-	opacity: 1;
-	transform: none;
-}
-
 /* Pușculiță widget */
 
 .fr-piggybank {

@@ -3,7 +3,6 @@ import PiggybankCounter from './islands/PiggybankCounter';
 import MapPoints from './islands/MapPoints';
 import ReferralProgram from './islands/ReferralProgram';
 import SignatureCard from './islands/SignatureCard';
-import { initScrollReveal } from './scroll-reveal';
 
 const islands = {
 	'piggybank-counter': PiggybankCounter,
@@ -20,5 +19,3 @@ document.querySelectorAll('[data-fr-island]').forEach((el) => {
 		createRoot(el).render(<Component {...props} />);
 	}
 });
-
-initScrollReveal();

@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import gsap from 'gsap';
 import { HARTA_INNER_SVG, HARTA_VIEWBOX, projectLonLat } from '../lib/harta-svg';
 import { lonLatFor } from '../lib/romania-map';
 
 const GOAL_CITIES = 100;
 
 export default function MapPoints({ compact = false }) {
-	const wrapperRef = useRef(null);
 	const svgRef = useRef(null);
-	const dotsRef = useRef([]);
 	const [markersHost, setMarkersHost] = useState(null);
 	const [data, setData] = useState(null);
 	const [error, setError] = useState(false);
@@ -36,36 +33,6 @@ export default function MapPoints({ compact = false }) {
 		})
 		.filter(Boolean);
 
-	useEffect(() => {
-		dotsRef.current = dotsRef.current.slice(0, plotted.length);
-		if (!plotted.length || !wrapperRef.current || !markersHost) return undefined;
-
-		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			gsap.set(dotsRef.current, { scale: 1 });
-			return undefined;
-		}
-
-		gsap.set(dotsRef.current, { scale: 0, transformOrigin: 'center' });
-		const io = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (!entry.isIntersecting) return;
-					gsap.to(dotsRef.current, {
-						scale: 1,
-						duration: 0.6,
-						ease: 'back.out(2)',
-						stagger: { each: 0.08, from: 'random' },
-					});
-					io.unobserve(wrapperRef.current);
-				});
-			},
-			{ threshold: 0.15 }
-		);
-		io.observe(wrapperRef.current);
-
-		return () => io.disconnect();
-	}, [plotted.length, markersHost]);
-
 	if (error) return null;
 	if (!data) return <p className="fr-map-status">Se încarcă harta...</p>;
 
@@ -73,7 +40,7 @@ export default function MapPoints({ compact = false }) {
 	const selectPoint = (p) => setSelected((cur) => (cur && pointKey(cur) === pointKey(p) ? null : p));
 
 	return (
-		<div className={`fr-map${compact ? ' fr-map--compact' : ''}`} ref={wrapperRef}>
+		<div className={`fr-map${compact ? ' fr-map--compact' : ''}`}>
 			<svg
 				ref={svgRef}
 				className="fr-map-svg"
@@ -84,7 +51,7 @@ export default function MapPoints({ compact = false }) {
 			/>
 			{markersHost &&
 				createPortal(
-					plotted.map((p, i) => (
+					plotted.map((p) => (
 						<g
 							key={`${p.locality}-${p.county}`}
 							className="fr-map-point"
@@ -100,7 +67,6 @@ export default function MapPoints({ compact = false }) {
 							}}
 						>
 							<circle
-								ref={(el) => (dotsRef.current[i] = el)}
 								className={`fr-map-dot${p.is_new ? ' fr-map-dot--new' : ''}`}
 								cx={p.coords[0]}
 								cy={p.coords[1]}

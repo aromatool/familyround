@@ -1,38 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
 import { createFamilyRoundJar } from '../lib/pusculita';
 import { PUSCULITA_INNER_SVG, PUSCULITA_VIEWBOX } from '../lib/pusculita-svg';
 
-function useCountUp(target, start, duration = 1200) {
-	const [value, setValue] = useState(0);
-	const frameRef = useRef(null);
-
-	useEffect(() => {
-		if (!start || !target) return undefined;
-
-		let startTs = null;
-		const step = (ts) => {
-			if (!startTs) startTs = ts;
-			const progress = Math.min(1, (ts - startTs) / duration);
-			const eased = 1 - Math.pow(1 - progress, 3);
-			setValue(target * eased);
-			if (progress < 1) frameRef.current = requestAnimationFrame(step);
-		};
-		frameRef.current = requestAnimationFrame(step);
-
-		return () => cancelAnimationFrame(frameRef.current);
-	}, [target, start, duration]);
-
-	return value;
-}
-
 export default function PiggybankCounter({ compact = false }) {
-	const wrapperRef = useRef(null);
 	const svgRef = useRef(null);
 	const jarRef = useRef(null);
 	const [data, setData] = useState(null);
 	const [error, setError] = useState(false);
-	const [started, setStarted] = useState(false);
 
 	useEffect(() => {
 		const restUrl = (window.frData && window.frData.restUrl) || '';
@@ -45,7 +19,6 @@ export default function PiggybankCounter({ compact = false }) {
 	const allocated = data?.allocated || 0;
 	const goal = data?.mission?.goal_amount || 0;
 	const pct = goal ? Math.min(100, (allocated / goal) * 100) : 0;
-	const animatedAllocated = useCountUp(allocated, started);
 
 	useEffect(() => {
 		if (!svgRef.current) return undefined;
@@ -55,36 +28,16 @@ export default function PiggybankCounter({ compact = false }) {
 	}, []);
 
 	useEffect(() => {
-		if (!data || !data.mission || !wrapperRef.current || !jarRef.current) return undefined;
-
-		const io = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (!entry.isIntersecting) return;
-					setStarted(true);
-					const proxy = { ratio: 0 };
-					gsap.to(proxy, {
-						ratio: pct / 100,
-						duration: 1.4,
-						ease: 'power3.out',
-						onUpdate: () => jarRef.current.setProgress(proxy.ratio),
-					});
-					io.unobserve(wrapperRef.current);
-				});
-			},
-			{ threshold: 0.15 }
-		);
-		io.observe(wrapperRef.current);
-
-		return () => io.disconnect();
-	}, [data, pct]);
+		if (!jarRef.current) return;
+		jarRef.current.setProgress(pct / 100);
+	}, [pct]);
 
 	if (error) return null;
 	if (!data) return <p>Se încarcă...</p>;
 	if (!data.mission) return <p>Nicio misiune activă momentan.</p>;
 
 	return (
-		<div className="fr-piggy-widget" ref={wrapperRef}>
+		<div className="fr-piggy-widget">
 			<svg
 				ref={svgRef}
 				className="fr-jar"
@@ -93,7 +46,7 @@ export default function PiggybankCounter({ compact = false }) {
 			/>
 			<p className="fr-piggy-title">{data.mission.title}</p>
 			<p className="fr-piggy-amount">
-				{Math.round(animatedAllocated)} lei din {Math.round(goal)} lei
+				{Math.round(allocated)} lei din {Math.round(goal)} lei
 			</p>
 			<p className="fr-piggy-note">Sumă alocată din vânzări reale — nu este încă suma transferată cauzei.</p>
 			{!compact && data.mission.description && <p className="fr-piggy-desc">{data.mission.description}</p>}
