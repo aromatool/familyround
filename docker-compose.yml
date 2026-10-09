@@ -27,6 +27,13 @@ services:
       - wp_data:/var/www/html
       - ./wp-content/themes/familyround:/var/www/html/wp-content/themes/familyround
       - ./wp-content/plugins/familyround-core:/var/www/html/wp-content/plugins/familyround-core
+      - ./wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
 
   wpcli:
     image: wordpress:cli-php8.2
@@ -43,6 +50,7 @@ services:
       - wp_data:/var/www/html
       - ./wp-content/themes/familyround:/var/www/html/wp-content/themes/familyround
       - ./wp-content/plugins/familyround-core:/var/www/html/wp-content/plugins/familyround-core
+      - ./wp-content/mu-plugins:/var/www/html/wp-content/mu-plugins
 
 volumes:
   db_data:

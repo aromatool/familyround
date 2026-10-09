@@ -84,6 +84,29 @@ class FR_Referrals {
 			return new WP_Error( 'fr_invalid_signup', 'Prenume și email valide sunt obligatorii.', array( 'status' => 400 ) );
 		}
 
+		$referrer  = self::upsert_referrer_with_fresh_token( $first_name, $email );
+		$link      = self::referral_link( $referrer->referral_code );
+		$dashboard = self::dashboard_link( $referrer->token );
+
+		$body = "Salut, {$first_name}!\n\nLinkul tău FamilyRound: {$link}\nDashboard-ul tău: {$dashboard}\n\nMulțumim că dai timpul mai departe!";
+		wp_mail( $email, 'Linkul tău de recomandare FamilyRound', $body );
+
+		return new WP_REST_Response(
+			array(
+				'code'      => $referrer->referral_code,
+				'link'      => $link,
+				'dashboard' => $dashboard,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Creează sau reînnoiește un recomandator — folosit atât de formularul public,
+	 * cât și automat, pentru orice cumpărător (fiecare client devine un recomandator eligibil).
+	 * Token-ul se reînnoiește de fiecare dată: ultimul email trimis conține mereu linkul valid.
+	 */
+	public static function upsert_referrer_with_fresh_token( $first_name, $email ) {
 		global $wpdb;
 		$table    = $wpdb->prefix . 'fr_referrers';
 		$existing = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE email = %s", $email ) );
@@ -108,20 +131,20 @@ class FR_Referrals {
 			);
 		}
 
-		$link      = add_query_arg( 'ref', $code, home_url( '/' ) );
-		$dashboard = add_query_arg( 'token', $token, home_url( '/da-timpul-mai-departe/' ) );
-
-		$body = "Salut, {$first_name}!\n\nLinkul tău FamilyRound: {$link}\nDashboard-ul tău: {$dashboard}\n\nMulțumim că dai timpul mai departe!";
-		wp_mail( $email, 'Linkul tău de recomandare FamilyRound', $body );
-
-		return new WP_REST_Response(
-			array(
-				'code'      => $code,
-				'link'      => $link,
-				'dashboard' => $dashboard,
-			),
-			200
+		return (object) array(
+			'referral_code' => $code,
+			'token'         => $token,
+			'first_name'    => $first_name,
+			'email'         => $email,
 		);
+	}
+
+	public static function referral_link( $code ) {
+		return add_query_arg( 'ref', $code, home_url( '/' ) );
+	}
+
+	public static function dashboard_link( $token ) {
+		return add_query_arg( 'token', $token, home_url( '/da-timpul-mai-departe/' ) );
 	}
 
 	public static function handle_dashboard( WP_REST_Request $request ) {
@@ -162,7 +185,7 @@ class FR_Referrals {
 			array(
 				'first_name'      => $referrer->first_name,
 				'code'            => $referrer->referral_code,
-				'link'            => add_query_arg( 'ref', $referrer->referral_code, home_url( '/' ) ),
+				'link'            => self::referral_link( $referrer->referral_code ),
 				'validated_count' => $validated_count,
 				'total_bonus'     => $total_bonus,
 			),

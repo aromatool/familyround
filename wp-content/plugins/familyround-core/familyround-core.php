@@ -21,6 +21,7 @@ require_once FR_CORE_PATH . 'includes/class-fr-referrals.php';
 require_once FR_CORE_PATH . 'includes/class-fr-checkout.php';
 require_once FR_CORE_PATH . 'includes/class-fr-orders.php';
 require_once FR_CORE_PATH . 'includes/class-fr-admin.php';
+require_once FR_CORE_PATH . 'includes/class-fr-email.php';
 
 register_activation_hook( __FILE__, array( 'FR_DB', 'activate' ) );
 
@@ -38,4 +39,5 @@ add_action( 'plugins_loaded', function () {
 	FR_Checkout::init();
 	FR_Orders::init();
 	FR_Admin::init();
+	FR_Email::init();
 } );
