@@ -24,13 +24,23 @@ Admin: http://localhost:8080/wp-admin (user: `admin`, parolă: `admin`)
 docker compose run --rm wpcli wp <orice comandă wp-cli>
 ```
 
-## Stare curentă (Ziua 1)
+## Stare curentă
 
-- WordPress + WooCommerce instalate, monedă RON
-- Temă FamilyRound activă, homepage cu poveste + CTA + contor Pușculiță live
-- Plugin `familyround-core` activ, tabele proprii create, endpoint `/piggybank/summary` funcțional
-- Un produs de test creat ("FamilyRound — 30 de provocări în familie", 111 lei)
+- WordPress + WooCommerce instalate, monedă RON, checkout clasic (shortcode, nu block-based)
+- Temă FamilyRound activă: homepage, pagini (Povestea noastră, Contact, legale), meniu + footer
+- Livrare: curier / easybox / ridicare personală (zonă RO) — toate testate la checkout
+- Plată: ramburs activ (temporar, pentru testare locală); plugin-urile NETOPIA și SmartBill instalate și active, dar fără chei — se configurează imediat ce există PFA
+- `familyround-core`: tabele proprii, alocare automată Pușculiță la fiecare comandă confirmată, validare recomandări (anti-fraudă: auto-recomandare, client existent), agregare Hartă — toate verificate end-to-end cu comenzi de test
+- Programul de recomandări complet: înscriere, cod/link, cookie de atribuire, dashboard privat prin token
+- Panou admin propriu (meniul „Pușculița”) pentru creat/activat/finalizat misiuni
+- Pagini Pușculița / Harta / Dă timpul mai departe — insule React reale, conectate la API-ul propriu
+
+## Blocat pe conturi externe (nu pe cod)
+
+- **NETOPIA** — plugin instalat, așteaptă cont comerciant (necesită PFA)
+- **SmartBill (e-Factura)** — plugin instalat, așteaptă cont
+- **Curier/AWB** — nicio integrare încă, așteaptă alegerea curierului
 
 ## Următorii pași
 
-Checkout simplificat, NETOPIA, facturare/e-Factura, curier/AWB — conform planului din documentul de arhitectură.
+Configurare NETOPIA + SmartBill cu chei reale, integrare curier/AWB, emailuri tranzacționale personalizate, rafinare vizuală (poze, animații).
