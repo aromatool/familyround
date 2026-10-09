@@ -345,11 +345,11 @@ body.admin-bar .fr-site-header {
 
 .fr-hero-photo {
 	width: 100%;
-	max-width: 560px;
+	max-width: 620px;
 	height: auto;
 	display: block;
-	border-radius: 18px;
-	box-shadow: var(--fr-shadow-soft);
+	-webkit-mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, black 55%, transparent 100%);
+	mask-image: radial-gradient(ellipse 68% 72% at 50% 42%, black 55%, transparent 100%);
 }
 
 .fr-card-stack-wrap {

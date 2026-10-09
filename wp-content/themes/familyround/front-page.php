@@ -30,7 +30,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 			</ul>
 		</div>
 		<div class="fr-hero-card">
-			<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-lifestyle.jpg' ); ?>" alt="O familie jucând FamilyRound la masă, alegând un cartonaș cu provocări">
+			<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
 		</div>
 	</div>
 </section>
@@ -45,11 +45,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 <section class="fr-pillar fr-reveal" id="jocuri">
 	<div class="fr-container fr-pillar-grid">
 		<div class="fr-pillar-image">
-			<div class="fr-card-stack-wrap">
-				<img class="fr-card-decoy fr-card-decoy--1" src="<?php echo esc_url( $images_url . 'card-03.jpg' ); ?>" alt="" aria-hidden="true">
-				<img class="fr-card-decoy fr-card-decoy--2" src="<?php echo esc_url( $images_url . 'card-02.jpg' ); ?>" alt="" aria-hidden="true">
-				<div data-fr-island="signature-card"></div>
-			</div>
+			<img src="<?php echo esc_url( $images_url . 'hero-lifestyle.jpg' ); ?>" alt="O familie jucând FamilyRound la masă, alegând un cartonaș cu provocări">
 		</div>
 		<div class="fr-pillar-text">
 			<p class="fr-pillar-cap">Jocurile FamilyRound</p>
