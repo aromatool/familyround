@@ -98,4 +98,15 @@ class FR_DB {
 
 		update_option( 'fr_core_db_version', FR_CORE_VERSION );
 	}
+
+	/**
+	 * Misiunea Pușculiței activă acum — sursă unică, folosită de REST și de hook-urile de comandă.
+	 */
+	public static function get_active_mission_id() {
+		global $wpdb;
+
+		return $wpdb->get_var(
+			"SELECT id FROM {$wpdb->prefix}fr_missions WHERE status = 'active' ORDER BY id DESC LIMIT 1"
+		);
+	}
 }

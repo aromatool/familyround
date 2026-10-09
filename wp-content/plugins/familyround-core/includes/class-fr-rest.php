@@ -24,6 +24,49 @@ class FR_REST {
 				'permission_callback' => '__return_true',
 			)
 		);
+
+		register_rest_route(
+			'familyround/v1',
+			'/map/points',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_map_points' ),
+				'permission_callback' => '__return_true',
+			)
+		);
+	}
+
+	/**
+	 * Date agregate, fără nicio informație personală — doar localitate, județ și număr de comenzi.
+	 */
+	public static function get_map_points( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$rows = $wpdb->get_results(
+			"SELECT locality, county, total_count, first_delivery_at, last_delivery_at
+			 FROM {$wpdb->prefix}fr_map_points
+			 ORDER BY total_count DESC"
+		);
+
+		$points = array_map(
+			function ( $row ) {
+				return array(
+					'locality'   => $row->locality,
+					'county'     => $row->county,
+					'count'      => (int) $row->total_count,
+					'is_new'     => strtotime( $row->first_delivery_at ) >= strtotime( '-7 days' ),
+				);
+			},
+			$rows
+		);
+
+		return new WP_REST_Response(
+			array(
+				'points'        => $points,
+				'total_cities'  => count( $points ),
+			),
+			200
+		);
 	}
 
 	/**
