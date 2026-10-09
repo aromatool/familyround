@@ -1,10 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { createFamilyRoundJar } from '../lib/pusculita';
 import { PUSCULITA_INNER_SVG, PUSCULITA_VIEWBOX } from '../lib/pusculita-svg';
-
-gsap.registerPlugin(ScrollTrigger);
 
 function useCountUp(target, start, duration = 1200) {
 	const [value, setValue] = useState(0);
@@ -60,23 +57,26 @@ export default function PiggybankCounter({ compact = false }) {
 	useEffect(() => {
 		if (!data || !data.mission || !wrapperRef.current || !jarRef.current) return undefined;
 
-		const trigger = ScrollTrigger.create({
-			trigger: wrapperRef.current,
-			start: 'top 85%',
-			once: true,
-			onEnter: () => {
-				setStarted(true);
-				const proxy = { ratio: 0 };
-				gsap.to(proxy, {
-					ratio: pct / 100,
-					duration: 1.4,
-					ease: 'power3.out',
-					onUpdate: () => jarRef.current.setProgress(proxy.ratio),
+		const io = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (!entry.isIntersecting) return;
+					setStarted(true);
+					const proxy = { ratio: 0 };
+					gsap.to(proxy, {
+						ratio: pct / 100,
+						duration: 1.4,
+						ease: 'power3.out',
+						onUpdate: () => jarRef.current.setProgress(proxy.ratio),
+					});
+					io.unobserve(wrapperRef.current);
 				});
 			},
-		});
+			{ threshold: 0.15 }
+		);
+		io.observe(wrapperRef.current);
 
-		return () => trigger.kill();
+		return () => io.disconnect();
 	}, [data, pct]);
 
 	if (error) return null;

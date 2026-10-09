@@ -1,66 +1,55 @@
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Reveal discret la scroll pentru secțiunile marcate `.fr-reveal`. Secțiunile
  * de tip pillar (imagine/vizual + text) intră cu un mic decalaj între cele
  * două jumătăți, în loc să apară dintr-o singură mișcare rigidă.
+ *
+ * Deliberat pe IntersectionObserver nativ, nu pe GSAP ScrollTrigger: pragul
+ * de declanșare al ScrollTrigger e calculat o singură dată, în pixeli, și
+ * poate rămâne nealiniat cu pagina reală dacă ceva (extensii de browser,
+ * throttling, resurse încărcate cu întârziere) întârzie recalcularea —
+ * riscul fiind conținut blocat la opacitate 0, invizibil permanent.
+ * IntersectionObserver recalculează mereu față de viewport-ul curent, fără
+ * cache de poziții, deci nu poate rămâne "în urmă" în acest fel.
  */
 export function initScrollReveal() {
-	const sections = gsap.utils.toArray('.fr-reveal');
+	const sections = document.querySelectorAll('.fr-reveal');
 	if (!sections.length) return;
 
-	const mm = gsap.matchMedia();
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-	mm.add('(prefers-reduced-motion: no-preference)', () => {
-		sections.forEach((section) => {
-			const grid = section.querySelector('.fr-pillar-grid, .fr-piggybank-grid');
-			const halves = grid ? Array.from(grid.children) : null;
+	sections.forEach((section) => {
+		const grid = section.querySelector('.fr-pillar-grid, .fr-piggybank-grid');
+		const halves = grid ? Array.from(grid.children) : null;
+		const isSplit = halves && halves.length === 2;
 
-			if (halves && halves.length === 2) {
-				gsap.set(halves[0], { autoAlpha: 0, x: -24 });
-				gsap.set(halves[1], { autoAlpha: 0, x: 24 });
-				ScrollTrigger.create({
-					trigger: section,
-					start: 'top 82%',
-					once: true,
-					onEnter: () => {
-						gsap.to(halves, {
-							autoAlpha: 1,
-							x: 0,
-							duration: 0.9,
-							ease: 'power3.out',
-							stagger: 0.12,
-						});
-					},
-				});
-			} else {
-				gsap.set(section, { autoAlpha: 0, y: 28 });
-				ScrollTrigger.create({
-					trigger: section,
-					start: 'top 85%',
-					once: true,
-					onEnter: () => {
+		if (reduceMotion) {
+			gsap.set(isSplit ? halves : section, { clearProps: 'all' });
+			return;
+		}
+
+		if (isSplit) {
+			gsap.set(halves[0], { autoAlpha: 0, x: -24 });
+			gsap.set(halves[1], { autoAlpha: 0, x: 24 });
+		} else {
+			gsap.set(section, { autoAlpha: 0, y: 28 });
+		}
+
+		const io = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (!entry.isIntersecting) return;
+					if (isSplit) {
+						gsap.to(halves, { autoAlpha: 1, x: 0, duration: 0.9, ease: 'power3.out', stagger: 0.12 });
+					} else {
 						gsap.to(section, { autoAlpha: 1, y: 0, duration: 0.9, ease: 'power3.out' });
-					},
+					}
+					io.unobserve(section);
 				});
-			}
-		});
-
-		return () => {
-			sections.forEach((section) => gsap.set(section, { clearProps: 'all' }));
-		};
+			},
+			{ threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
+		);
+		io.observe(section);
 	});
-
-	mm.add('(prefers-reduced-motion: reduce)', () => {
-		sections.forEach((section) => gsap.set(section, { clearProps: 'all' }));
-	});
-
-	// Images and web fonts can still be loading when the triggers above are
-	// created, so their start positions are measured against a shorter page
-	// than the real one. Recalculate once everything has actually loaded,
-	// so sections further down don't end up stuck past a stale threshold.
-	window.addEventListener('load', () => ScrollTrigger.refresh());
 }

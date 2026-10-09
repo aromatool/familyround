@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { HARTA_INNER_SVG, HARTA_VIEWBOX, projectLonLat } from '../lib/harta-svg';
 import { lonLatFor } from '../lib/romania-map';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const GOAL_CITIES = 100;
 
@@ -43,31 +40,30 @@ export default function MapPoints({ compact = false }) {
 		dotsRef.current = dotsRef.current.slice(0, plotted.length);
 		if (!plotted.length || !wrapperRef.current || !markersHost) return undefined;
 
-		const mm = gsap.matchMedia();
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			gsap.set(dotsRef.current, { scale: 1 });
+			return undefined;
+		}
 
-		mm.add('(prefers-reduced-motion: no-preference)', () => {
-			gsap.set(dotsRef.current, { scale: 0, transformOrigin: 'center' });
-			const trigger = ScrollTrigger.create({
-				trigger: wrapperRef.current,
-				start: 'top 85%',
-				once: true,
-				onEnter: () => {
+		gsap.set(dotsRef.current, { scale: 0, transformOrigin: 'center' });
+		const io = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (!entry.isIntersecting) return;
 					gsap.to(dotsRef.current, {
 						scale: 1,
 						duration: 0.6,
 						ease: 'back.out(2)',
 						stagger: { each: 0.08, from: 'random' },
 					});
-				},
-			});
-			return () => trigger.kill();
-		});
+					io.unobserve(wrapperRef.current);
+				});
+			},
+			{ threshold: 0.15 }
+		);
+		io.observe(wrapperRef.current);
 
-		mm.add('(prefers-reduced-motion: reduce)', () => {
-			gsap.set(dotsRef.current, { scale: 1 });
-		});
-
-		return () => mm.revert();
+		return () => io.disconnect();
 	}, [plotted.length, markersHost]);
 
 	if (error) return null;
