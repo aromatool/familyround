@@ -41,13 +41,25 @@ $fr_cards = array(
 <section class="fr-hero fr-texture">
 	<div class="fr-container fr-hero-grid">
 		<div class="fr-hero-text">
-			<span class="fr-eyebrow">30 de idei care vă scot din rutină</span>
-			<h1>Mai mult timp,<br>împreună.</h1>
-			<p>Alegeți un cartonaș. Faceți provocarea împreună — unele acasă, în 10 minute, altele vă trimit afară, într-o mică aventură. Păstrați momentul pe posterul familiei. Încet, posterul gol devine povestea voastră.</p>
-			<a class="fr-cta" href="<?php echo esc_url( $shop_url ); ?>">Comandă jocul — 111 lei</a>
+			<span class="fr-eyebrow">30 de provocări. 30 de amintiri.</span>
+			<h1>Faceți lucruri împreună.<br>Păstrați ce rămâne.</h1>
+			<p>Alegeți un cartonaș și porniți într-o mică aventură în familie. Unele provocări durează câteva minute, altele vă scot din casă. După fiecare, păstrați o fotografie sau o amintire pe poster. La final, nu rămâne doar un set de cartonașe. Rămâne povestea voastră.</p>
+			<div class="fr-hero-cta-block">
+				<a class="fr-cta" href="#toate-cele-30">Descoperă cele 30 de provocări</a>
+				<span class="fr-cta-subtext">Set complet · 111 lei</span>
+			</div>
+			<ul class="fr-hero-micro">
+				<li>30 de provocări</li>
+				<li>Poster de amintiri</li>
+				<li>Fără reguli complicate</li>
+			</ul>
 		</div>
 		<div class="fr-hero-card">
-			<div data-fr-island="signature-card"></div>
+			<div class="fr-card-stack-wrap">
+				<img class="fr-card-decoy fr-card-decoy--1" src="<?php echo esc_url( $images_url . 'card-03.jpg' ); ?>" alt="" aria-hidden="true">
+				<img class="fr-card-decoy fr-card-decoy--2" src="<?php echo esc_url( $images_url . 'card-02.jpg' ); ?>" alt="" aria-hidden="true">
+				<div data-fr-island="signature-card"></div>
+			</div>
 		</div>
 	</div>
 </section>
@@ -76,7 +88,7 @@ $fr_cards = array(
 	</div>
 </section>
 
-<section class="fr-gallery fr-reveal">
+<section class="fr-gallery fr-reveal" id="toate-cele-30">
 	<div class="fr-container fr-gallery-head">
 		<span class="fr-eyebrow">Toate cele 30</span>
 		<h2>Unele sunt simple, altele vă trimit într-o aventură</h2>

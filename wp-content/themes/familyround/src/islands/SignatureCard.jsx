@@ -1,18 +1,38 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
 const FRONTS = ['card-19.jpg', 'card-01.jpg', 'card-29.jpg', 'card-11.jpg'];
+const AUTO_FLIP_MS = 4500;
 
 export default function SignatureCard() {
 	const sceneRef = useRef(null);
 	const tiltRef = useRef(null);
 	const flipRef = useRef(null);
+	const frontImgRef = useRef(null);
 	const quickRotX = useRef(null);
 	const quickRotY = useRef(null);
-	const [flipped, setFlipped] = useState(false);
-	const [frontIndex, setFrontIndex] = useState(0);
+	const flippedRef = useRef(false);
+	const frontIndexRef = useRef(0);
+	const intervalRef = useRef(null);
 
 	const assetsUrl = (typeof window !== 'undefined' && window.frData && window.frData.assetsUrl) || '';
+
+	const doFlip = () => {
+		const next = !flippedRef.current;
+		if (next) {
+			frontIndexRef.current = (frontIndexRef.current + 1) % FRONTS.length;
+			if (frontImgRef.current) {
+				frontImgRef.current.src = `${assetsUrl}${FRONTS[frontIndexRef.current]}`;
+			}
+		}
+		gsap.to(flipRef.current, { rotationY: next ? 180 : 0, duration: 0.6, ease: 'power2.inOut' });
+		flippedRef.current = next;
+	};
+
+	const startAutoFlip = () => {
+		clearInterval(intervalRef.current);
+		intervalRef.current = setInterval(doFlip, AUTO_FLIP_MS);
+	};
 
 	useEffect(() => {
 		gsap.set(tiltRef.current, { rotation: -3 });
@@ -36,19 +56,18 @@ export default function SignatureCard() {
 
 		scene.addEventListener('mousemove', onMove);
 		scene.addEventListener('mouseleave', onLeave);
+		startAutoFlip();
+
 		return () => {
 			scene.removeEventListener('mousemove', onMove);
 			scene.removeEventListener('mouseleave', onLeave);
+			clearInterval(intervalRef.current);
 		};
 	}, []);
 
 	const handleClick = () => {
-		const next = !flipped;
-		if (next) {
-			setFrontIndex((i) => (i + 1) % FRONTS.length);
-		}
-		gsap.to(flipRef.current, { rotationY: next ? 180 : 0, duration: 0.6, ease: 'power2.inOut' });
-		setFlipped(next);
+		doFlip();
+		startAutoFlip();
 	};
 
 	return (
@@ -59,11 +78,15 @@ export default function SignatureCard() {
 						<img src={`${assetsUrl}card-back.jpg`} alt="Verso cartonaș FamilyRound" />
 					</div>
 					<div className="fr-card-face fr-card-face--back">
-						<img src={`${assetsUrl}${FRONTS[frontIndex]}`} alt="O provocare FamilyRound" />
+						<img ref={frontImgRef} src={`${assetsUrl}${FRONTS[0]}`} alt="O provocare FamilyRound" />
 					</div>
 				</div>
 			</div>
-			<p className="fr-card-hint">Atinge cartonașul</p>
+			<p className="fr-card-hint">
+				Întoarce un cartonaș
+				<br />
+				și vezi unde vă duce.
+			</p>
 		</div>
 	);
 }

@@ -205,14 +205,14 @@ body.admin-bar .fr-site-header {
 .fr-hero {
 	position: relative;
 	background: var(--fr-cream);
-	padding: 80px 0 96px;
+	padding: 56px 0 72px;
 	overflow: hidden;
 }
 
 .fr-hero-grid {
 	display: flex;
 	align-items: center;
-	gap: 56px;
+	gap: 48px;
 	flex-wrap: wrap;
 }
 
@@ -231,6 +231,7 @@ body.admin-bar .fr-site-header {
 .fr-hero-text > *:nth-child(2) { animation-delay: 0.12s; }
 .fr-hero-text > *:nth-child(3) { animation-delay: 0.19s; }
 .fr-hero-text > *:nth-child(4) { animation-delay: 0.26s; }
+.fr-hero-text > *:nth-child(5) { animation-delay: 0.33s; }
 
 @keyframes fr-rise {
 	to { opacity: 1; transform: translateY(0); }
@@ -252,15 +253,88 @@ body.admin-bar .fr-site-header {
 
 .fr-hero-text p {
 	max-width: 480px;
-	font-size: 18px;
+	font-size: 17px;
 	color: var(--fr-ink);
-	margin: 16px 0 32px;
+	margin: 14px 0 24px;
+}
+
+.fr-hero-cta-block {
+	display: flex;
+	align-items: baseline;
+	gap: 14px;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+}
+
+.fr-cta-subtext {
+	font-size: 13px;
+	color: var(--fr-muted);
+}
+
+.fr-hero-micro {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 18px;
+	margin: 0;
+	padding: 0;
+	font-size: 13px;
+	color: var(--fr-muted);
+}
+
+.fr-hero-micro li {
+	position: relative;
+	padding-left: 16px;
+}
+
+.fr-hero-micro li::before {
+	content: '·';
+	position: absolute;
+	left: 0;
+	color: var(--fr-gold);
+}
+
+.fr-hero-micro li:first-child {
+	padding-left: 0;
+}
+
+.fr-hero-micro li:first-child::before {
+	content: '';
 }
 
 .fr-hero-card {
-	flex: 1 1 280px;
+	flex: 1 1 320px;
 	display: flex;
 	justify-content: center;
+}
+
+.fr-card-stack-wrap {
+	position: relative;
+	width: 310px;
+	max-width: 100%;
+}
+
+.fr-card-decoy {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	aspect-ratio: 110 / 140;
+	object-fit: cover;
+	border-radius: 14px;
+	box-shadow: var(--fr-shadow-soft);
+}
+
+.fr-card-decoy--1 {
+	transform: rotate(8deg) translate(10px, 6px);
+	opacity: 0.55;
+	z-index: 0;
+}
+
+.fr-card-decoy--2 {
+	transform: rotate(-6deg) translate(-8px, 4px);
+	opacity: 0.7;
+	z-index: 1;
 }
 
 .fr-cta {
@@ -283,7 +357,9 @@ body.admin-bar .fr-site-header {
 /* Signature card — tilt on hover, flip on click */
 
 .fr-card-scene {
-	width: 260px;
+	position: relative;
+	z-index: 2;
+	width: 310px;
 	max-width: 100%;
 	perspective: 1400px;
 	text-align: center;
