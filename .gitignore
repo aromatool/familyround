@@ -1,0 +1,4 @@
+.env
+node_modules/
+wp-content/themes/familyround/assets/dist/
+.DS_Store
