@@ -43,6 +43,8 @@ docker compose run --rm wpcli wp <orice comandă wp-cli>
 - **SmartBill (e-Factura)** — plugin instalat, așteaptă cont
 - **Curier/AWB** — plugin **Colete-Online** instalat (fără CUI la înregistrare); așteaptă doar cheia API din contul creat pe colete-online.ro, plus greutatea/dimensiunile reale ale produsului
 
+- Paginile legale (Termeni, Confidențialitate/GDPR, Retur, FAQ) au conținut real, funcțional pentru lansare — cu `[placeholder-uri]` clar marcate pentru CUI/sediu (de completat după PFA) și metoda finală de plată
+
 ## Următorii pași
 
-Configurare NETOPIA + SmartBill + Colete-Online cu chei reale, conținut real pentru paginile legale (acum sunt placeholder), rafinare vizuală (poze, animații).
+Configurare NETOPIA + SmartBill + Colete-Online cu chei reale, completarea placeholder-elor din paginile legale (CUI, sediu) odată cu PFA, revizuire finală a textelor legale de către un avocat/contabil, rafinare vizuală (poze, animații).
