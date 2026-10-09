@@ -589,10 +589,42 @@ body.admin-bar .fr-site-header {
 	flex: 1 1 380px;
 }
 
+.fr-box-cap {
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--fr-gold);
+	margin: 0 0 10px;
+}
+
 .fr-box-text h2 {
 	font-size: clamp(28px, 3.8vw, 38px);
 	font-weight: 500;
-	margin-bottom: 24px;
+	margin-bottom: 16px;
+}
+
+.fr-box-desc {
+	font-size: 16px;
+	color: var(--fr-ink);
+	line-height: 1.65;
+	max-width: 440px;
+	margin: 0 0 24px;
+}
+
+.fr-box-facts {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 24px;
+	margin: 0 0 28px;
+	padding: 0;
+	font-size: 14px;
+	color: var(--fr-muted);
+}
+
+.fr-box-facts strong {
+	color: var(--fr-green);
+	font-family: var(--fr-font-serif);
 }
 
 .fr-box-list {
