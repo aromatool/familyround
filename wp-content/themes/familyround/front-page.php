@@ -65,24 +65,29 @@ $fr_cards = array(
 </section>
 
 <section class="fr-how fr-reveal">
-	<div class="fr-container">
-		<span class="fr-eyebrow">Cum funcționează</span>
-		<h2>Fără puncte, fără câștigători, fără reguli complicate</h2>
-		<div class="fr-how-grid">
-			<div class="fr-how-step">
-				<span class="fr-how-number">01</span>
-				<h3>Alegeți un cartonaș</h3>
-				<p>Deschideți cutia și alegeți una dintre cele 30 de provocări. Nu trebuie făcute într-o anumită ordine și nu există un termen limită.</p>
+	<div class="fr-container fr-how-inner">
+		<h2>Fără puncte, fără câștigători,<br>fără reguli complicate.</h2>
+		<div class="fr-how-list">
+			<div class="fr-how-row">
+				<span class="fr-how-num">01</span>
+				<div class="fr-how-copy">
+					<h3>Alegeți un cartonaș</h3>
+					<p>Deschideți cutia și alegeți una dintre cele 30 de provocări. Nu trebuie făcute într-o anumită ordine și nu există un termen limită.</p>
+				</div>
 			</div>
-			<div class="fr-how-step">
-				<span class="fr-how-number">02</span>
-				<h3>Faceți provocarea</h3>
-				<p>Citiți cartonașul, pregătiți ce aveți nevoie și trăiți experiența împreună — acasă sau într-o mică aventură afară.</p>
+			<div class="fr-how-row">
+				<span class="fr-how-num">02</span>
+				<div class="fr-how-copy">
+					<h3>Faceți provocarea</h3>
+					<p>Citiți cartonașul, pregătiți ce aveți nevoie și trăiți experiența împreună — acasă sau într-o mică aventură afară.</p>
+				</div>
 			</div>
-			<div class="fr-how-step">
-				<span class="fr-how-number">03</span>
-				<h3>Păstrați amintirea</h3>
-				<p>Notați data și lipiți pe poster o fotografie, un bilet sau un desen. Încet, posterul gol devine povestea familiei voastre.</p>
+			<div class="fr-how-row">
+				<span class="fr-how-num">03</span>
+				<div class="fr-how-copy">
+					<h3>Păstrați amintirea</h3>
+					<p>Notați data și lipiți pe poster o fotografie, un bilet sau un desen. Încet, posterul gol devine povestea familiei voastre.</p>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -90,8 +95,7 @@ $fr_cards = array(
 
 <section class="fr-gallery fr-reveal" id="toate-cele-30">
 	<div class="fr-container fr-gallery-head">
-		<span class="fr-eyebrow">Toate cele 30</span>
-		<h2>Unele sunt simple, altele vă trimit într-o aventură</h2>
+		<h2>Unele sunt simple.<br>Altele vă trimit într-o aventură.</h2>
 	</div>
 	<div class="fr-gallery-track">
 		<?php foreach ( $fr_cards as $num => $title ) : ?>
@@ -108,8 +112,7 @@ $fr_cards = array(
 			<img src="<?php echo esc_url( $images_url . 'product-box.jpg' ); ?>" alt="Cutia FamilyRound cu cartonașele de provocări">
 		</div>
 		<div class="fr-box-text">
-			<span class="fr-eyebrow">Ce găsești în cutie</span>
-			<h2>Un set complet, gândit pentru 30 de momente speciale</h2>
+			<h2>Un set complet, gândit pentru 30 de momente speciale.</h2>
 			<ul class="fr-box-list">
 				<li><strong>30 de cartonașe cu provocări</strong> — fiecare propune o experiență diferită, cu instrucțiuni simple și idei de la care să porniți.</li>
 				<li><strong>Posterul „Amintiri care rămân”</strong> — locul unde adunați, pe parcurs, fotografii, bilețele și urmele celor 30 de experiențe.</li>
@@ -121,14 +124,15 @@ $fr_cards = array(
 </section>
 
 <section class="fr-story fr-reveal">
-	<div class="fr-container">
-		<span class="fr-eyebrow">Povestea noastră</span>
-		<h2>De ce există FamilyRound</h2>
-		<p class="fr-story-text">Am pornit de la o întrebare simplă: cum lăsăm telefoanele deoparte și petrecem timp real, împreună, ca familie? Am scris 30 de provocări, le-am testat cu propriile noastre familii, și am construit o cutie pe care chiar vrem s-o ținem pe masa din sufragerie.</p>
+	<div class="fr-container fr-story-inner">
+		<p class="fr-story-cap">Povestea noastră</p>
+		<p class="fr-story-quote">Am pornit de la o întrebare simplă: cum lăsăm telefoanele deoparte și petrecem timp real, împreună, ca familie?</p>
+		<p class="fr-story-text">Am scris 30 de provocări, le-am testat cu propriile noastre familii, și am construit o cutie pe care chiar vrem s-o ținem pe masa din sufragerie.</p>
+		<p class="fr-story-sign">— echipa FamilyRound</p>
 	</div>
 </section>
 
-<section class="fr-statement fr-reveal">
+<section class="fr-statement fr-dark fr-reveal">
 	<p>Peste câțiva ani, copiii nu vor ține minte emisiunea pe care ați văzut-o împreună. <em>Vor ține minte seara în care ați făcut ceva, împreună.</em></p>
 </section>
 
@@ -151,8 +155,7 @@ $fr_cards = array(
 
 <section class="fr-piggybank">
 	<div class="fr-container">
-		<span class="fr-eyebrow">Pușculița FamilyRound</span>
-		<h2>Fiecare joc contează dublu</h2>
+		<h2>Fiecare joc contează dublu. 5 lei din fiecare joc ajung în Pușculița FamilyRound.</h2>
 		<div data-fr-island="piggybank-counter"></div>
 	</div>
 </section>
