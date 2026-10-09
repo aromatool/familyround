@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_THEME_VERSION', '0.1.0' );
+define( 'FR_THEME_VERSION', '0.2.0' );
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'title-tag' );
@@ -17,8 +17,24 @@ add_action( 'after_setup_theme', function () {
 	) );
 } );
 
+add_filter( 'wp_resource_hints', function ( $urls, $relation_type ) {
+	if ( 'preconnect' === $relation_type ) {
+		$urls[] = array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' );
+	}
+	return $urls;
+}, 10, 2 );
+
 add_action( 'wp_enqueue_scripts', function () {
-	wp_enqueue_style( 'familyround-style', get_stylesheet_uri(), array(), FR_THEME_VERSION );
+	wp_enqueue_style(
+		'familyround-fonts',
+		'https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
+		array(),
+		null
+	);
+
+	wp_enqueue_style( 'familyround-style', get_stylesheet_uri(), array( 'familyround-fonts' ), FR_THEME_VERSION );
+
+	wp_enqueue_script( 'familyround-interactions', get_theme_file_uri( 'assets/interactions.js' ), array(), FR_THEME_VERSION, true );
 
 	$asset_path = get_theme_file_path( 'assets/dist/main.js' );
 	if ( file_exists( $asset_path ) ) {
