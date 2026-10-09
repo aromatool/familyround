@@ -1,9 +1,9 @@
 <?php if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
 
-$shop_url           = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/magazin' );
-$images_url         = get_theme_file_uri( 'assets/images/' );
-$first_product_url  = $shop_url;
+$shop_url          = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/magazin' );
+$images_url        = get_theme_file_uri( 'assets/images/' );
+$first_product_url = $shop_url;
 
 if ( function_exists( 'wc_get_products' ) ) {
 	$fr_products = wc_get_products( array( 'limit' => 1, 'orderby' => 'date', 'order' => 'ASC', 'status' => 'publish' ) );
@@ -16,17 +16,17 @@ if ( function_exists( 'wc_get_products' ) ) {
 <section class="fr-hero fr-texture">
 	<div class="fr-container fr-hero-grid">
 		<div class="fr-hero-text">
-			<span class="fr-eyebrow">30 de provocări. 30 de amintiri.</span>
+			<span class="fr-eyebrow">FamilyRound</span>
 			<h1>Faceți lucruri împreună.<br>Păstrați ce rămâne.</h1>
-			<p>Alegeți un cartonaș și porniți într-o mică aventură în familie. Unele provocări durează câteva minute, altele vă scot din casă. După fiecare, păstrați o fotografie sau o amintire pe poster. La final, nu rămâne doar un set de cartonașe. Rămâne povestea voastră.</p>
+			<p>Construim jocuri și inițiative care aduc familiile mai aproape — departe de ecrane, mai aproape unii de alții. Primul nostru joc e deja aici.</p>
 			<div class="fr-hero-cta-block">
-				<a class="fr-cta" href="<?php echo esc_url( $first_product_url ); ?>">Descoperă primul nostru joc</a>
-				<span class="fr-cta-subtext">Set complet · 111 lei</span>
+				<a class="fr-cta" href="#jocuri">Descoperă jocurile FamilyRound</a>
+				<span class="fr-cta-subtext">De la 111 lei</span>
 			</div>
 			<ul class="fr-hero-micro">
-				<li>30 de provocări</li>
-				<li>Poster de amintiri</li>
-				<li>Fără reguli complicate</li>
+				<li>Jocuri de familie</li>
+				<li>Pușculița FamilyRound</li>
+				<li>O comunitate care crește</li>
 			</ul>
 		</div>
 		<div class="fr-hero-card">
@@ -39,50 +39,53 @@ if ( function_exists( 'wc_get_products' ) ) {
 	</div>
 </section>
 
-<section class="fr-how fr-reveal">
-	<div class="fr-container fr-how-inner">
-		<h2>Fără puncte, fără câștigători,<br>fără reguli complicate.</h2>
-		<div class="fr-how-list">
-			<div class="fr-how-row">
-				<span class="fr-how-num">01</span>
-				<div class="fr-how-copy">
-					<h3>Alegeți un cartonaș</h3>
-					<p>Deschideți cutia și alegeți una dintre provocări. Nu trebuie făcute într-o anumită ordine și nu există un termen limită.</p>
-				</div>
-			</div>
-			<div class="fr-how-row">
-				<span class="fr-how-num">02</span>
-				<div class="fr-how-copy">
-					<h3>Faceți provocarea</h3>
-					<p>Citiți cartonașul, pregătiți ce aveți nevoie și trăiți experiența împreună — acasă sau într-o mică aventură afară.</p>
-				</div>
-			</div>
-			<div class="fr-how-row">
-				<span class="fr-how-num">03</span>
-				<div class="fr-how-copy">
-					<h3>Păstrați amintirea</h3>
-					<p>Notați data și lipiți pe poster o fotografie, un bilet sau un desen. Încet, posterul gol devine povestea familiei voastre.</p>
-				</div>
-			</div>
+<section class="fr-pillar fr-reveal" id="jocuri">
+	<div class="fr-container fr-pillar-grid">
+		<div class="fr-pillar-image">
+			<img src="<?php echo esc_url( $images_url . 'product-box.jpg' ); ?>" alt="Cutia FamilyRound cu cartonașele de provocări">
+		</div>
+		<div class="fr-pillar-text">
+			<p class="fr-pillar-cap">Jocurile FamilyRound</p>
+			<h2>30 de provocări în familie</h2>
+			<p>Primul nostru joc: 30 de cartonașe cu provocări, un poster pentru amintiri, 111 lei. Alegeți un cartonaș, faceți provocarea împreună, păstrați amintirea.</p>
+			<a class="fr-cta-ghost" href="<?php echo esc_url( $first_product_url ); ?>">Vezi jocul →</a>
 		</div>
 	</div>
 </section>
 
-<section class="fr-box fr-reveal">
-	<div class="fr-container fr-box-grid">
-		<div class="fr-box-image">
-			<img src="<?php echo esc_url( $images_url . 'product-box.jpg' ); ?>" alt="Cutia FamilyRound cu cartonașele de provocări">
+<section class="fr-piggybank fr-reveal">
+	<div class="fr-container">
+		<p class="fr-pillar-cap" style="text-align:center;">Pușculița FamilyRound</p>
+		<h2>Fiecare joc contează dublu</h2>
+		<div data-fr-island="piggybank-counter"></div>
+		<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">Vezi Pușculița →</a>
+	</div>
+</section>
+
+<section class="fr-pillar fr-pillar--reverse fr-reveal">
+	<div class="fr-container fr-pillar-grid">
+		<div class="fr-pillar-text">
+			<p class="fr-pillar-cap">Harta FamilyRound</p>
+			<h2>Fiecare familie adaugă un oraș pe hartă</h2>
+			<p>Urmărim cum crește comunitatea FamilyRound, oraș cu oraș — fără nicio adresă sau dată personală afișată, doar impactul vostru colectiv.</p>
+			<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/harta-familyround/' ) ); ?>">Vezi harta →</a>
 		</div>
-		<div class="fr-box-text">
-			<p class="fr-box-cap">Primul nostru joc</p>
-			<h2>30 de provocări în familie</h2>
-			<p class="fr-box-desc">30 de cartonașe cu provocări, un poster pentru amintiri și instrucțiuni simple — totul într-o cutie gândită să stea pe masa din sufragerie, nu într-un sertar.</p>
-			<ul class="fr-box-facts">
-				<li><strong>30</strong> provocări</li>
-				<li><strong>111 lei</strong> setul complet</li>
-				<li><strong>5 lei</strong> în Pușculiță, din fiecare joc</li>
-			</ul>
-			<a class="fr-cta" href="<?php echo esc_url( $first_product_url ); ?>">Vezi detaliile jocului</a>
+		<div class="fr-pillar-visual fr-pillar-visual--map" aria-hidden="true">
+			<img class="fr-logo-watermark" src="<?php echo esc_url( $images_url . 'logo-icon.png' ); ?>" alt="">
+		</div>
+	</div>
+</section>
+
+<section class="fr-pillar fr-reveal">
+	<div class="fr-container fr-pillar-grid">
+		<div class="fr-pillar-visual fr-pillar-visual--refer" aria-hidden="true">
+			<img class="fr-logo-watermark" src="<?php echo esc_url( $images_url . 'logo-icon.png' ); ?>" alt="">
+		</div>
+		<div class="fr-pillar-text">
+			<p class="fr-pillar-cap">Dă timpul mai departe</p>
+			<h2>Recomandați, și aduceți încă 5 lei în Pușculiță</h2>
+			<p>Primiți un link personal. Fiecare familie nouă care cumpără prin el aduce un bonus suplimentar în Pușculița FamilyRound — fără cont, fără complicații.</p>
+			<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/da-timpul-mai-departe/' ) ); ?>">Află mai multe →</a>
 		</div>
 	</div>
 </section>
@@ -98,13 +101,6 @@ if ( function_exists( 'wc_get_products' ) ) {
 
 <section class="fr-statement fr-dark fr-reveal">
 	<p>Peste câțiva ani, copiii nu vor ține minte emisiunea pe care ați văzut-o împreună. <em>Vor ține minte seara în care ați făcut ceva, împreună.</em></p>
-</section>
-
-<section class="fr-piggybank">
-	<div class="fr-container">
-		<h2>Fiecare joc contează dublu. 5 lei din fiecare joc ajung în Pușculița FamilyRound.</h2>
-		<div data-fr-island="piggybank-counter"></div>
-	</div>
 </section>
 
 <?php get_footer(); ?>

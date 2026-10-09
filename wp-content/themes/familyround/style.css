@@ -559,6 +559,95 @@ body.admin-bar .fr-site-header {
 	margin: 0;
 }
 
+/* Brand pillars — Jocuri / Harta / Dă timpul mai departe, each a teaser linking to its own page */
+
+.fr-pillar {
+	padding: 88px 0;
+	background: var(--fr-cream);
+}
+
+.fr-pillar--reverse {
+	background: var(--fr-cream-dark);
+}
+
+.fr-pillar-grid {
+	display: flex;
+	gap: 56px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.fr-pillar--reverse .fr-pillar-grid {
+	flex-direction: row-reverse;
+}
+
+.fr-pillar-image,
+.fr-pillar-visual {
+	flex: 1 1 380px;
+}
+
+.fr-pillar-image img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: 14px;
+	box-shadow: var(--fr-shadow-soft);
+}
+
+.fr-pillar-visual {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 220px;
+}
+
+.fr-logo-watermark {
+	width: 140px;
+	height: auto;
+	opacity: 0.18;
+}
+
+.fr-pillar-text {
+	flex: 1 1 380px;
+}
+
+.fr-pillar-cap {
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--fr-gold);
+	margin: 0 0 10px;
+}
+
+.fr-pillar-text h2 {
+	font-size: clamp(26px, 3.6vw, 34px);
+	font-weight: 500;
+	margin-bottom: 16px;
+}
+
+.fr-pillar-text p {
+	font-size: 15.5px;
+	color: var(--fr-ink);
+	line-height: 1.65;
+	max-width: 440px;
+	margin: 0 0 24px;
+}
+
+.fr-cta-ghost {
+	display: inline-block;
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--fr-green);
+	text-decoration: none;
+	border-bottom: 1.5px solid var(--fr-gold);
+	padding-bottom: 2px;
+	transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.fr-cta-ghost:hover {
+	color: var(--fr-gold);
+}
+
 /* Ce găsești în cutie */
 
 .fr-box {
@@ -750,6 +839,10 @@ body.admin-bar .fr-site-header {
 	background: var(--fr-cream-dark);
 	padding: 96px 0;
 	text-align: center;
+}
+
+.fr-piggybank .fr-cta-ghost {
+	margin-top: 28px;
 }
 
 .fr-piggybank h2 {

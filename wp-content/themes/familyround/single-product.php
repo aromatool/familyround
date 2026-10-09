@@ -14,6 +14,35 @@ $fr_cards   = fr_challenge_cards();
 	?>
 </div>
 
+<section class="fr-how fr-reveal">
+	<div class="fr-container fr-how-inner">
+		<h2>Fără puncte, fără câștigători,<br>fără reguli complicate.</h2>
+		<div class="fr-how-list">
+			<div class="fr-how-row">
+				<span class="fr-how-num">01</span>
+				<div class="fr-how-copy">
+					<h3>Alegeți un cartonaș</h3>
+					<p>Deschideți cutia și alegeți una dintre provocări. Nu trebuie făcute într-o anumită ordine și nu există un termen limită.</p>
+				</div>
+			</div>
+			<div class="fr-how-row">
+				<span class="fr-how-num">02</span>
+				<div class="fr-how-copy">
+					<h3>Faceți provocarea</h3>
+					<p>Citiți cartonașul, pregătiți ce aveți nevoie și trăiți experiența împreună — acasă sau într-o mică aventură afară.</p>
+				</div>
+			</div>
+			<div class="fr-how-row">
+				<span class="fr-how-num">03</span>
+				<div class="fr-how-copy">
+					<h3>Păstrați amintirea</h3>
+					<p>Notați data și lipiți pe poster o fotografie, un bilet sau un desen. Încet, posterul gol devine povestea familiei voastre.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
 <section class="fr-gallery fr-reveal" id="toate-cele-30">
 	<div class="fr-container fr-gallery-head">
 		<h2>Unele sunt simple.<br>Altele vă trimit într-o aventură.</h2>
