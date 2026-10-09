@@ -9,6 +9,7 @@ docker compose up -d
 
 Site: http://localhost:8080
 Admin: http://localhost:8080/wp-admin (user: `admin`, parolă: `admin`)
+Emailuri (Mailpit, local, nu trimite real): http://localhost:8025
 
 ## Structură
 
@@ -34,13 +35,14 @@ docker compose run --rm wpcli wp <orice comandă wp-cli>
 - Programul de recomandări complet: înscriere, cod/link, cookie de atribuire, dashboard privat prin token
 - Panou admin propriu (meniul „Pușculița”) pentru creat/activat/finalizat misiuni
 - Pagini Pușculița / Harta / Dă timpul mai departe — insule React reale, conectate la API-ul propriu
+- Emailul de confirmare a comenzii include automat suma alocată în Pușculiță și linkul propriu de recomandare al cumpărătorului (fiecare client devine recomandator eligibil) — vizibil în Mailpit la fiecare comandă
 
 ## Blocat pe conturi externe (nu pe cod)
 
 - **NETOPIA** — plugin instalat, așteaptă cont comerciant (necesită PFA)
 - **SmartBill (e-Factura)** — plugin instalat, așteaptă cont
-- **Curier/AWB** — nicio integrare încă, așteaptă alegerea curierului
+- **Curier/AWB** — plugin **Colete-Online** instalat (fără CUI la înregistrare); așteaptă doar cheia API din contul creat pe colete-online.ro, plus greutatea/dimensiunile reale ale produsului
 
 ## Următorii pași
 
-Configurare NETOPIA + SmartBill cu chei reale, integrare curier/AWB, emailuri tranzacționale personalizate, rafinare vizuală (poze, animații).
+Configurare NETOPIA + SmartBill + Colete-Online cu chei reale, conținut real pentru paginile legale (acum sunt placeholder), rafinare vizuală (poze, animații).
