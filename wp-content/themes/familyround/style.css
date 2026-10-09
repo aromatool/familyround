@@ -63,11 +63,35 @@ a {
 	text-decoration: none;
 }
 
+.fr-nav ul {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0;
+	padding: 0;
+}
+
+.fr-nav li {
+	margin-left: 20px;
+}
+
 .fr-nav a {
 	color: var(--fr-cream);
 	text-decoration: none;
-	margin-left: 20px;
 	font-size: 14px;
+}
+
+.fr-footer-links ul {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+}
+
+.fr-footer-links li {
+	margin: 0 10px;
 }
 
 .fr-hero {
@@ -107,4 +131,57 @@ a {
 	padding: 32px 0;
 	text-align: center;
 	font-size: 13px;
+}
+
+.fr-site-footer a {
+	color: var(--fr-cream);
+}
+
+.fr-footer-links {
+	margin-top: 8px;
+}
+
+.fr-footer-links a {
+	margin: 0 8px;
+}
+
+.fr-woocommerce {
+	padding: 48px 24px;
+}
+
+.fr-woocommerce h1 {
+	margin-bottom: 24px;
+}
+
+.woocommerce ul.products li.product {
+	text-align: center;
+}
+
+.woocommerce span.price,
+.woocommerce .price {
+	color: var(--fr-green);
+	font-weight: 600;
+}
+
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce #respond input#submit,
+.woocommerce input.button {
+	background: var(--fr-gold);
+	color: var(--fr-green-dark);
+	border: none;
+	border-radius: 999px;
+	padding: 12px 28px;
+	font-weight: 600;
+}
+
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover {
+	background: var(--fr-green);
+	color: var(--fr-cream);
+}
+
+.woocommerce-page .fr-woocommerce table.shop_table th {
+	color: var(--fr-green);
 }
