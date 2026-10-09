@@ -1,30 +1,10 @@
 (function () {
 	var header = document.querySelector('.fr-site-header');
-	var parallaxEl = document.querySelector('[data-fr-parallax]');
-	var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-	if (header || (parallaxEl && !reduceMotion)) {
-		var ticking = false;
+	if (header) {
 		var onScroll = function () {
-			if (header) {
-				header.classList.toggle('is-scrolled', window.scrollY > 10);
-			}
-			if (parallaxEl && !reduceMotion) {
-				var offset = Math.min(window.scrollY * 0.25, 120);
-				parallaxEl.style.transform = 'translateY(' + offset + 'px)';
-			}
-			ticking = false;
+			header.classList.toggle('is-scrolled', window.scrollY > 10);
 		};
-		window.addEventListener(
-			'scroll',
-			function () {
-				if (!ticking) {
-					requestAnimationFrame(onScroll);
-					ticking = true;
-				}
-			},
-			{ passive: true }
-		);
+		window.addEventListener('scroll', onScroll, { passive: true });
 		onScroll();
 	}
 
