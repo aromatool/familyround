@@ -57,4 +57,10 @@ export function initScrollReveal() {
 	mm.add('(prefers-reduced-motion: reduce)', () => {
 		sections.forEach((section) => gsap.set(section, { clearProps: 'all' }));
 	});
+
+	// Images and web fonts can still be loading when the triggers above are
+	// created, so their start positions are measured against a shorter page
+	// than the real one. Recalculate once everything has actually loaded,
+	// so sections further down don't end up stuck past a stale threshold.
+	window.addEventListener('load', () => ScrollTrigger.refresh());
 }

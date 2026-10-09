@@ -30,7 +30,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 			</ul>
 		</div>
 		<div class="fr-hero-card">
-			<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
+			<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" width="1400" height="788" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
 		</div>
 	</div>
 </section>
@@ -45,7 +45,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 <section class="fr-pillar fr-reveal" id="jocuri">
 	<div class="fr-container fr-pillar-grid">
 		<div class="fr-pillar-image">
-			<img src="<?php echo esc_url( $images_url . 'hero-lifestyle.jpg' ); ?>" alt="O familie jucând FamilyRound la masă, alegând un cartonaș cu provocări">
+			<img src="<?php echo esc_url( $images_url . 'hero-lifestyle.jpg' ); ?>" width="1200" height="800" alt="O familie jucând FamilyRound la masă, alegând un cartonaș cu provocări">
 		</div>
 		<div class="fr-pillar-text">
 			<p class="fr-pillar-cap">Jocurile FamilyRound</p>
@@ -92,7 +92,7 @@ if ( function_exists( 'wc_get_products' ) ) {
 <section class="fr-pillar fr-reveal">
 	<div class="fr-container fr-pillar-grid">
 		<div class="fr-pillar-visual fr-pillar-visual--refer" aria-hidden="true">
-			<img class="fr-logo-watermark" src="<?php echo esc_url( $images_url . 'logo-icon.png' ); ?>" alt="">
+			<img class="fr-logo-watermark" src="<?php echo esc_url( $images_url . 'logo-icon.png' ); ?>" width="415" height="395" alt="">
 		</div>
 		<div class="fr-pillar-text">
 			<p class="fr-pillar-cap">Dă timpul mai departe</p>

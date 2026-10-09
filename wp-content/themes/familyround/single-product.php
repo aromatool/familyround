@@ -50,7 +50,7 @@ $fr_cards   = fr_challenge_cards();
 	<div class="fr-gallery-track">
 		<?php foreach ( $fr_cards as $num => $title ) : ?>
 			<figure class="fr-gallery-card">
-				<img src="<?php echo esc_url( $images_url . 'card-' . str_pad( $num, 2, '0', STR_PAD_LEFT ) . '.jpg' ); ?>" alt="Cartonaș FamilyRound nr. <?php echo esc_attr( $num ); ?> — <?php echo esc_attr( $title ); ?>" loading="lazy">
+				<img src="<?php echo esc_url( $images_url . 'card-' . str_pad( $num, 2, '0', STR_PAD_LEFT ) . '.jpg' ); ?>" width="408" height="520" alt="Cartonaș FamilyRound nr. <?php echo esc_attr( $num ); ?> — <?php echo esc_attr( $title ); ?>" loading="lazy">
 			</figure>
 		<?php endforeach; ?>
 	</div>
@@ -59,7 +59,7 @@ $fr_cards   = fr_challenge_cards();
 <section class="fr-box fr-reveal">
 	<div class="fr-container fr-box-grid">
 		<div class="fr-box-image">
-			<img src="<?php echo esc_url( $images_url . 'product-box.jpg' ); ?>" alt="Cutia FamilyRound cu cartonașele de provocări">
+			<img src="<?php echo esc_url( $images_url . 'product-box.jpg' ); ?>" width="1000" height="666" alt="Cutia FamilyRound cu cartonașele de provocări">
 		</div>
 		<div class="fr-box-text">
 			<p class="fr-box-cap">Ce găsești în cutie</p>
