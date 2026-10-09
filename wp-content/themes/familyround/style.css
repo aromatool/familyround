@@ -190,14 +190,10 @@ body.admin-bar .fr-site-header {
 .fr-footer-links ul {
 	list-style: none;
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
+	flex-direction: column;
+	gap: 10px;
 	margin: 0;
 	padding: 0;
-}
-
-.fr-footer-links li {
-	margin: 0 10px;
 }
 
 /* Hero — warm, human, editorial. Text + one signature card, no gimmicks. */
@@ -820,12 +816,13 @@ body.admin-bar .fr-site-header {
 	}
 }
 
-/* Scroll reveal */
+/* Scroll reveal — animat de GSAP ScrollTrigger (src/scroll-reveal.js).
+   Starea inițială e doar un fallback anti-FOUC; dacă bundle-ul React nu
+   se încarcă, assets/interactions.js adaugă .is-visible direct. */
 
 .fr-reveal {
 	opacity: 0;
-	transform: translateY(32px);
-	transition: opacity 1s cubic-bezier(.22,1,.36,1), transform 1s cubic-bezier(.22,1,.36,1);
+	transform: translateY(28px);
 }
 
 .fr-reveal.is-visible {
@@ -874,6 +871,109 @@ body.admin-bar .fr-site-header {
 	fill: var(--fr-gold);
 }
 
+/* Harta FamilyRound — contur real al României, fără date personale. */
+
+.fr-map-status {
+	text-align: center;
+	color: var(--fr-muted);
+}
+
+.fr-map {
+	max-width: 560px;
+	margin: 0 auto;
+}
+
+.fr-map-svg {
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+
+.fr-map-outline {
+	fill: var(--fr-cream);
+	stroke: var(--fr-green);
+	stroke-width: 1.6;
+}
+
+.fr-map-dot {
+	fill: var(--fr-gold);
+	stroke: var(--fr-cream);
+	stroke-width: 1.5;
+}
+
+.fr-map-dot--new {
+	fill: var(--fr-green);
+}
+
+.fr-map-point {
+	cursor: default;
+}
+
+.fr-map-caption {
+	text-align: center;
+	font-weight: 600;
+	font-size: 15px;
+	color: var(--fr-ink);
+	margin: 20px 0 0;
+}
+
+.fr-map-caption strong {
+	color: var(--fr-green);
+	font-size: 17px;
+}
+
+.fr-map-legend {
+	list-style: none;
+	margin: 24px 0 0;
+	padding: 0;
+	max-width: 420px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.fr-map-legend li {
+	display: flex;
+	justify-content: space-between;
+	padding: 9px 2px;
+	border-bottom: 1px solid var(--fr-cream-dark);
+	font-size: 14.5px;
+}
+
+.fr-map--compact {
+	max-width: 320px;
+}
+
+.fr-map--compact .fr-map-caption {
+	font-size: 14px;
+}
+
+.fr-map-page {
+	background: var(--fr-cream);
+	padding: 72px 0 96px;
+}
+
+.fr-map-page-inner {
+	max-width: 760px;
+	text-align: center;
+}
+
+.fr-map-page-inner h1 {
+	font-size: clamp(28px, 4vw, 38px);
+	font-weight: 500;
+	margin-bottom: 14px;
+}
+
+.fr-map-page-inner > p {
+	color: var(--fr-muted);
+	font-size: 16px;
+	max-width: 520px;
+	margin: 0 auto;
+}
+
+.fr-map-page-widget {
+	margin: 44px 0 0;
+}
+
 .fr-piggy-title {
 	font-weight: 600;
 	margin-bottom: 8px;
@@ -889,22 +989,75 @@ body.admin-bar .fr-site-header {
 
 .fr-site-footer {
 	background: var(--fr-green-dark);
-	color: var(--fr-cream);
-	padding: 32px 0;
-	text-align: center;
-	font-size: 13px;
+	color: var(--fr-cream-dark);
+	font-size: 14px;
 }
 
 .fr-site-footer a {
+	color: var(--fr-cream-dark);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.fr-site-footer a:hover {
+	color: var(--fr-gold-light);
+}
+
+.fr-footer-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 40px;
+	padding: 64px 0 40px;
+}
+
+.fr-footer-brand {
+	flex: 2 1 240px;
+}
+
+.fr-footer-logo {
 	color: var(--fr-cream);
+	font-family: var(--fr-font-serif);
+	font-size: 19px;
+	font-weight: 600;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
 }
 
-.fr-footer-links {
-	margin-top: 8px;
+.fr-footer-tagline {
+	margin: 10px 0 0;
+	color: var(--fr-gold-light);
+	font-style: italic;
+	font-size: 14px;
 }
 
-.fr-footer-links a {
-	margin: 0 8px;
+.fr-footer-col {
+	flex: 1 1 160px;
+}
+
+.fr-footer-heading {
+	margin: 0 0 14px;
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--fr-gold);
+}
+
+.fr-footer-col ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fr-footer-bottom {
+	border-top: 1px solid rgba(250, 246, 238, 0.12);
+	padding: 20px 0;
+	font-size: 12.5px;
+	color: var(--fr-cream-dark);
+	opacity: 0.75;
 }
 
 .fr-woocommerce {

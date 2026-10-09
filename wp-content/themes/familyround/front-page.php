@@ -70,8 +70,8 @@ if ( function_exists( 'wc_get_products' ) ) {
 			<p>Urmărim cum crește comunitatea FamilyRound, oraș cu oraș — fără nicio adresă sau dată personală afișată, doar impactul vostru colectiv.</p>
 			<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/harta-familyround/' ) ); ?>">Vezi harta →</a>
 		</div>
-		<div class="fr-pillar-visual fr-pillar-visual--map" aria-hidden="true">
-			<img class="fr-logo-watermark" src="<?php echo esc_url( $images_url . 'logo-icon.png' ); ?>" alt="">
+		<div class="fr-pillar-visual">
+			<div data-fr-island="map-points" data-fr-variant="compact"></div>
 		</div>
 	</div>
 </section>

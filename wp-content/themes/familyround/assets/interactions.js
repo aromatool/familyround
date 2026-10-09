@@ -8,24 +8,12 @@
 		onScroll();
 	}
 
-	var revealEls = document.querySelectorAll('.fr-reveal');
-	if (revealEls.length && 'IntersectionObserver' in window) {
-		var io = new IntersectionObserver(
-			function (entries) {
-				entries.forEach(function (entry) {
-					if (entry.isIntersecting) {
-						entry.target.classList.add('is-visible');
-						io.unobserve(entry.target);
-					}
-				});
-			},
-			{ threshold: 0.15 }
-		);
-		revealEls.forEach(function (el) {
-			io.observe(el);
-		});
-	} else {
-		revealEls.forEach(function (el) {
+	// Reveal-ul la scroll al secțiunilor `.fr-reveal` e gestionat de GSAP
+	// ScrollTrigger în bundle-ul React (src/scroll-reveal.js) — acest fișier
+	// se încarcă și fără build-ul Vite, deci tratăm acel caz ca fallback.
+	var hasIslandsBundle = !!document.querySelector('[data-fr-island]');
+	if (!hasIslandsBundle) {
+		document.querySelectorAll('.fr-reveal').forEach(function (el) {
 			el.classList.add('is-visible');
 		});
 	}

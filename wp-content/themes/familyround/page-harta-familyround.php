@@ -2,12 +2,14 @@
 get_header();
 ?>
 
-<div class="fr-container" style="padding: 48px 24px; max-width: 760px; text-align: center;">
-	<h1>Harta FamilyRound</h1>
-	<p>Fiecare joc livrat sau ridicat adaugă un oraș pe harta FamilyRound — fără nicio adresă sau dată personală afișată.</p>
-	<div style="margin: 32px 0;">
-		<div data-fr-island="map-points"></div>
+<section class="fr-map-page">
+	<div class="fr-container fr-map-page-inner">
+		<h1>Harta FamilyRound</h1>
+		<p>Fiecare joc livrat sau ridicat adaugă un oraș pe harta FamilyRound — fără nicio adresă sau dată personală afișată.</p>
+		<div class="fr-map-page-widget">
+			<div data-fr-island="map-points"></div>
+		</div>
 	</div>
-</div>
+</section>
 
 <?php get_footer(); ?>
