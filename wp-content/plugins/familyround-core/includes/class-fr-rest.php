@@ -77,14 +77,38 @@ class FR_REST {
 		global $wpdb;
 
 		$mission = $wpdb->get_row(
-			"SELECT id, title, goal_amount FROM {$wpdb->prefix}fr_missions WHERE status = 'active' ORDER BY id DESC LIMIT 1"
+			"SELECT id, title, description, goal_amount FROM {$wpdb->prefix}fr_missions WHERE status = 'active' ORDER BY id DESC LIMIT 1"
+		);
+
+		$past_missions = $wpdb->get_results(
+			"SELECT m.id, m.title, m.goal_amount,
+			        COALESCE(SUM(l.amount), 0) AS allocated
+			 FROM {$wpdb->prefix}fr_missions m
+			 LEFT JOIN {$wpdb->prefix}fr_piggybank_ledger l
+			        ON l.mission_id = m.id AND l.status != 'cancelled'
+			 WHERE m.status != 'active'
+			 GROUP BY m.id
+			 ORDER BY m.id DESC"
+		);
+
+		$past = array_map(
+			function ( $row ) {
+				return array(
+					'id'          => (int) $row->id,
+					'title'       => $row->title,
+					'goal_amount' => (float) $row->goal_amount,
+					'allocated'   => (float) $row->allocated,
+				);
+			},
+			$past_missions
 		);
 
 		if ( ! $mission ) {
 			return new WP_REST_Response(
 				array(
-					'mission' => null,
-					'allocated' => 0,
+					'mission'       => null,
+					'allocated'     => 0,
+					'past_missions' => $past,
 				),
 				200
 			);
@@ -100,12 +124,14 @@ class FR_REST {
 
 		return new WP_REST_Response(
 			array(
-				'mission'   => array(
+				'mission'       => array(
 					'id'          => (int) $mission->id,
 					'title'       => $mission->title,
+					'description' => $mission->description,
 					'goal_amount' => (float) $mission->goal_amount,
 				),
-				'allocated' => (float) $allocated,
+				'allocated'     => (float) $allocated,
+				'past_missions' => $past,
 			),
 			200
 		);

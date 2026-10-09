@@ -61,11 +61,21 @@ if ( function_exists( 'wc_get_products' ) ) {
 </section>
 
 <section class="fr-piggybank fr-reveal">
-	<div class="fr-container">
-		<p class="fr-pillar-cap" style="text-align:center;">Pușculița FamilyRound</p>
-		<h2>Fiecare joc contează dublu</h2>
-		<div data-fr-island="piggybank-counter"></div>
-		<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">Vezi Pușculița →</a>
+	<div class="fr-container fr-piggybank-grid">
+		<div data-fr-island="piggybank-counter" data-fr-variant="compact"></div>
+		<div class="fr-piggybank-text">
+			<p class="fr-pillar-cap fr-pillar-cap--on-dark">Pușculița FamilyRound</p>
+			<h2>Bucuria voastră merge mai departe</h2>
+			<p>Din fiecare joc cumpărat, punem 5 lei deoparte pentru o cauză.</p>
+			<div class="fr-piggy-formula">
+				<div><strong>5 lei</strong><span>din fiecare joc</span></div>
+				<div class="fr-piggy-formula-op">+</div>
+				<div><strong>5 lei</strong><span>în plus, prin recomandare</span></div>
+				<div class="fr-piggy-formula-op">=</div>
+				<div><strong>10 lei</strong><span>pentru bine</span></div>
+			</div>
+			<a class="fr-cta-ghost fr-cta-ghost--on-dark" href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">Descoperă Pușculița →</a>
+		</div>
 	</div>
 </section>
 

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_THEME_VERSION', '0.5.0' );
+define( 'FR_THEME_VERSION', '0.6.1' );
 
 function fr_challenge_cards() {
 	return array(

@@ -16,7 +16,7 @@ export function initScrollReveal() {
 
 	mm.add('(prefers-reduced-motion: no-preference)', () => {
 		sections.forEach((section) => {
-			const grid = section.querySelector('.fr-pillar-grid');
+			const grid = section.querySelector('.fr-pillar-grid, .fr-piggybank-grid');
 			const halves = grid ? Array.from(grid.children) : null;
 
 			if (halves && halves.length === 2) {
