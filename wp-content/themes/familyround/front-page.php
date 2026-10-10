@@ -13,26 +13,23 @@ if ( function_exists( 'wc_get_products' ) ) {
 }
 ?>
 
-<section class="fr-hero fr-texture">
-	<div class="fr-container fr-hero-grid">
+<section class="fr-hero">
+	<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" width="1400" height="788" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
+
+	<svg class="fr-hero-curve" viewBox="0 0 600 300" fill="none" preserveAspectRatio="none" aria-hidden="true">
+		<path d="M0 36 C 150 30, 330 88, 420 180 C 480 242, 540 276, 600 288" stroke="var(--fr-gold)" stroke-width="1.2" />
+	</svg>
+
+	<div class="fr-container fr-hero-inner">
 		<div class="fr-hero-text">
-			<span class="fr-eyebrow">FamilyRound</span>
-			<h1>Faceți lucruri <em>împreună</em>.<br>Păstrați ce rămâne.</h1>
-			<p>Construim jocuri și inițiative care aduc familiile mai aproape — departe de ecrane, mai aproape unii de alții. Primul nostru joc e deja aici.</p>
-			<div class="fr-hero-cta-block">
-				<a class="fr-cta" href="#jocuri">Descoperă jocurile FamilyRound</a>
-				<span class="fr-cta-subtext">De la 111 lei</span>
-			</div>
-			<ul class="fr-hero-micro">
-				<li>Jocuri de familie</li>
-				<li>Pușculița FamilyRound</li>
-				<li>O comunitate care crește</li>
-			</ul>
-		</div>
-		<div class="fr-hero-card">
-			<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" width="1400" height="788" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
+			<span class="fr-eyebrow">Jocuri pentru timpul care contează</span>
+			<h1>Mai mult timp,<br><em>împreună.</em></h1>
+			<p>Jocuri și experiențe care aduc familia împreună.</p>
+			<a class="fr-cta" href="#jocuri">Descoperă experiențele →</a>
 		</div>
 	</div>
+
+	<span class="fr-hero-edge" aria-hidden="true">Timp pentru ai tăi</span>
 </section>
 
 <div class="fr-ribbon">
