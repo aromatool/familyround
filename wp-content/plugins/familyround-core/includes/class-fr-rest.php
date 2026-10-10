@@ -108,16 +108,30 @@ class FR_REST {
 				array(
 					'mission'       => null,
 					'allocated'     => 0,
+					'donated'       => 0,
+					'cause'         => null,
 					'past_missions' => $past,
 				),
 				200
 			);
 		}
 
+		// Allocated and donated are read from the SAME active mission, so the amount
+		// and the goal always describe one campaign (never the historical total).
 		$allocated = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COALESCE(SUM(amount), 0) FROM {$wpdb->prefix}fr_piggybank_ledger
 				 WHERE mission_id = %d AND status != 'cancelled'",
+				$mission->id
+			)
+		);
+
+		// Funds actually transferred to the cause. No ledger entry carries this status
+		// yet, so it is 0 today; it becomes real once transfers are recorded.
+		$donated = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COALESCE(SUM(amount), 0) FROM {$wpdb->prefix}fr_piggybank_ledger
+				 WHERE mission_id = %d AND status = 'donated'",
 				$mission->id
 			)
 		);
@@ -131,6 +145,10 @@ class FR_REST {
 					'goal_amount' => (float) $mission->goal_amount,
 				),
 				'allocated'     => (float) $allocated,
+				'donated'       => (float) $donated,
+				// Confirmed beneficiary. Null until a real cause is set, so the UI shows
+				// "Cauza urmează să fie anunțată." rather than inventing a beneficiary.
+				'cause'         => null,
 				'past_missions' => $past,
 			),
 			200

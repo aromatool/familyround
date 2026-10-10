@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { createFamilyRoundJar } from '../lib/pusculita';
-import { PUSCULITA_INNER_SVG, PUSCULITA_VIEWBOX } from '../lib/pusculita-svg';
+
+const fmtLei = (n) => Math.round(n).toLocaleString('ro-RO');
+const fmtPct = (n) => n.toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export default function PiggybankCounter({ compact = false }) {
-	const svgRef = useRef(null);
-	const jarRef = useRef(null);
+	const panelRef = useRef(null);
 	const [data, setData] = useState(null);
 	const [error, setError] = useState(false);
+	const [barWidth, setBarWidth] = useState(0);
 
 	useEffect(() => {
 		const restUrl = (window.frData && window.frData.restUrl) || '';
@@ -16,54 +17,135 @@ export default function PiggybankCounter({ compact = false }) {
 			.catch(() => setError(true));
 	}, []);
 
+	const mission = data?.mission || null;
 	const allocated = data?.allocated || 0;
-	const goal = data?.mission?.goal_amount || 0;
-	const pct = goal ? Math.min(100, (allocated / goal) * 100) : 0;
+	const donated = data?.donated || 0;
+	const goal = mission?.goal_amount || 0;
+	const rawPct = goal > 0 ? (allocated / goal) * 100 : 0;
+	const pct = Math.max(0, Math.min(100, rawPct));
+	const remaining = Math.max(0, goal - allocated);
+	const cause = data?.cause || null;
 
+	// The bar grows to the real percent once. It fails open: the width is always set
+	// from JS (immediately on reduced motion, on viewport entry otherwise, and via a
+	// safety timeout regardless), so it can never stay stuck at 0 in a background tab.
 	useEffect(() => {
-		if (!svgRef.current) return undefined;
-		const jar = createFamilyRoundJar(svgRef.current);
-		jarRef.current = jar;
-		return () => jar.destroy();
-	}, []);
+		if (!data || !mission) return undefined;
+		const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (reduce) {
+			setBarWidth(pct);
+			return undefined;
+		}
 
-	useEffect(() => {
-		if (!jarRef.current) return;
-		jarRef.current.setProgress(pct / 100);
-	}, [pct]);
+		let settled = false;
+		const grow = () => {
+			if (!settled) {
+				settled = true;
+				setBarWidth(pct);
+			}
+		};
+		const el = panelRef.current;
+		if ('IntersectionObserver' in window && el) {
+			const io = new IntersectionObserver(
+				(entries) => entries.forEach((e) => {
+					if (e.isIntersecting) {
+						grow();
+						io.disconnect();
+					}
+				}),
+				{ threshold: 0.2 }
+			);
+			io.observe(el);
+			const t = setTimeout(() => {
+				grow();
+				io.disconnect();
+			}, 1200);
+			return () => {
+				clearTimeout(t);
+				io.disconnect();
+			};
+		}
+		grow();
+		return undefined;
+	}, [data, mission, pct]);
 
 	if (error) return null;
-	if (!data) return <p>Se încarcă...</p>;
-	if (!data.mission) return <p>Nicio misiune activă momentan.</p>;
+
+	const pusculitaUrl = (window.frData && window.frData.pusculitaUrl) || '/pusculita-familyround/';
 
 	return (
-		<div className="fr-piggy-widget">
-			<svg
-				ref={svgRef}
-				className="fr-jar"
-				viewBox={PUSCULITA_VIEWBOX}
-				dangerouslySetInnerHTML={{ __html: PUSCULITA_INNER_SVG }}
-			/>
-			<p className="fr-piggy-title">{data.mission.title}</p>
-			<p className="fr-piggy-amount">
-				{Math.round(allocated)} lei din {Math.round(goal)} lei
-			</p>
-			<p className="fr-piggy-note">Sumă alocată din vânzări reale — nu este încă suma transferată cauzei.</p>
-			{!compact && data.mission.description && <p className="fr-piggy-desc">{data.mission.description}</p>}
-			{!compact && data.past_missions && data.past_missions.length > 0 && (
-				<div className="fr-piggy-history">
-					<p className="fr-piggy-history-title">Campanii încheiate</p>
-					<ul>
-						{data.past_missions.map((m) => (
-							<li key={m.id}>
-								<span>{m.title}</span>
-								<span>
-									{Math.round(m.allocated)} / {Math.round(m.goal_amount)} lei
-								</span>
-							</li>
-						))}
-					</ul>
-				</div>
+		<div ref={panelRef} className={`fr-pp${compact ? ' fr-pp--compact' : ''}`}>
+			{!data ? (
+				<p className="fr-pp-loading">Se încarcă…</p>
+			) : !mission ? (
+				<>
+					<p className="fr-pp-label">Pușculița, până acum</p>
+					<p className="fr-pp-empty">Pregătim următoarea misiune FamilyRound.</p>
+				</>
+			) : (
+				<>
+					<p className="fr-pp-label">Pușculița, până acum</p>
+					<p className="fr-pp-amount">{fmtLei(allocated)} lei</p>
+					<p className="fr-pp-amount-sub">puși deoparte din vânzări</p>
+
+					<div className="fr-pp-progress">
+						<span className="fr-pp-pct">{fmtPct(pct)}%</span>
+						<div
+							className="fr-pp-bar"
+							role="progressbar"
+							aria-valuenow={Math.round(pct)}
+							aria-valuemin={0}
+							aria-valuemax={100}
+							aria-label={`Progres către obiectiv: ${fmtPct(pct)}%`}
+						>
+							<span className="fr-pp-bar-fill" style={{ width: `${barWidth}%` }} />
+						</div>
+					</div>
+
+					<div className="fr-pp-figures">
+						<span>Obiectiv: {fmtLei(goal)} lei</span>
+						<span>Mai avem: {fmtLei(remaining)} lei</span>
+					</div>
+
+					<hr className="fr-pp-divider" />
+
+					<p className="fr-pp-label">Destinația fondurilor</p>
+					<p className="fr-pp-cause">{cause ? cause.name : 'Cauza urmează să fie anunțată.'}</p>
+
+					{donated > 0 ? (
+						<p className="fr-pp-status">
+							{fmtLei(allocated)} lei alocați · <strong>{fmtLei(donated)} lei donați</strong>
+						</p>
+					) : (
+						<p className="fr-pp-status">Suma afișată este alocată, încă nedonată.</p>
+					)}
+
+					{cause && cause.note && <p className="fr-pp-status">{cause.note}</p>}
+
+					{compact && (
+						<a className="fr-btn-solid fr-pp-btn" href={pusculitaUrl}>
+							Vezi Pușculița și donațiile →
+						</a>
+					)}
+
+					{!compact && mission.description && <p className="fr-pp-desc">{mission.description}</p>}
+
+					{!compact && data.past_missions && data.past_missions.length > 0 && (
+						<div className="fr-pp-history">
+							<p className="fr-pp-history-title">Campanii încheiate</p>
+							<ul>
+								{data.past_missions.map((m) => (
+									<li key={m.id}>
+										<span>{m.title}</span>
+										<span>
+											{fmtLei(m.allocated)} / {fmtLei(m.goal_amount)} lei
+										</span>
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+				</>
 			)}
 		</div>
 	);

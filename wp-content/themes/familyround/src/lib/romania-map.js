@@ -7,6 +7,7 @@
 const CITY_LONLAT = {
 	bucuresti: [26.1025, 44.4268],
 	'cluj-napoca': [23.6236, 46.7712],
+	floresti: [23.4899, 46.7439],
 	timisoara: [21.2087, 45.7489],
 	iasi: [27.6014, 47.1585],
 	constanta: [28.635, 44.1598],

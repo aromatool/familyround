@@ -15,7 +15,13 @@ document.querySelectorAll('[data-fr-island]').forEach((el) => {
 	const name = el.getAttribute('data-fr-island');
 	const Component = islands[name];
 	if (Component) {
-		const props = el.dataset.frVariant === 'compact' ? { compact: true } : {};
+		const props = {
+			compact: el.dataset.frVariant === 'compact',
+			variant: el.dataset.frVariant || 'default',
+			title: el.dataset.title,
+			subtitle: el.dataset.subtitle,
+			href: el.dataset.href,
+		};
 		createRoot(el).render(<Component {...props} />);
 	}
 });
