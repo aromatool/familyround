@@ -29,6 +29,9 @@ $fr = wp_parse_args(
 	array(
 		'label'      => 'De făcut împreună',
 		'title'      => '',
+		'art_mark'   => 'FR',
+		'deck_front' => '',
+		'deck_back'  => '',
 		'desc'       => '',
 		'specs'      => array(),
 		'price_html' => '',
@@ -46,11 +49,27 @@ $fr = wp_parse_args(
 );
 
 $has_peek = ! empty( $fr['peek_img'] );
+$has_deck = ! empty( $fr['deck_front'] ) && ! empty( $fr['deck_back'] );
 ?>
 <article class="fr-product fr-fade-up">
 	<div class="fr-product-media">
-		<figure class="fr-product-figure"<?php echo $has_peek ? ' data-fr-peek data-back-label="' . esc_attr( $fr['back_label'] ) . '" data-set-label="' . esc_attr( $fr['peek_label'] ) . '"' : ''; ?>>
-			<img class="fr-product-img fr-product-img--set is-active" src="<?php echo esc_url( $fr['set_img'] ); ?>" width="1200" height="800" alt="<?php echo esc_attr( $fr['set_alt'] ); ?>">
+		<figure class="fr-product-figure<?php echo $has_deck ? ' fr-product-figure--deck' : ( empty( $fr['set_img'] ) ? ' fr-product-figure--art' : '' ); ?>"<?php echo $has_peek && ! $has_deck ? ' data-fr-peek data-back-label="' . esc_attr( $fr['back_label'] ) . '" data-set-label="' . esc_attr( $fr['peek_label'] ) . '"' : ''; ?>>
+			<?php if ( $has_deck ) : ?>
+				<div class="fr-product-deck">
+					<img class="fr-product-deck-back" src="<?php echo esc_url( $fr['deck_back'] ); ?>" width="550" height="800" alt="Versoul cartonașului FamilyRound" loading="lazy">
+					<img class="fr-product-deck-front" src="<?php echo esc_url( $fr['deck_front'] ); ?>" width="408" height="520" alt="Un cartonaș din experiența 30 de provocări în familie" loading="lazy">
+				</div>
+			<?php elseif ( ! empty( $fr['set_img'] ) ) : ?>
+				<img class="fr-product-img fr-product-img--set is-active" src="<?php echo esc_url( $fr['set_img'] ); ?>" width="1200" height="800" alt="<?php echo esc_attr( $fr['set_alt'] ); ?>">
+			<?php else : ?>
+				<div class="fr-product-art" aria-hidden="true">
+					<span class="fr-product-art-kicker"><?php echo esc_html( $fr['label'] ); ?></span>
+					<svg class="fr-product-art-orbit" viewBox="0 0 300 300" fill="none" aria-hidden="true"><circle cx="150" cy="150" r="132"/><circle cx="150" cy="150" r="104"/><path d="M18 150c44-34 70 34 132 0s88 34 132 0"/></svg>
+					<strong class="fr-product-art-mark"><?php echo esc_html( $fr['art_mark'] ); ?></strong>
+					<span class="fr-product-art-name"><?php echo esc_html( $fr['title'] ); ?></span>
+					<span class="fr-product-art-sign">FamilyRound</span>
+				</div>
+			<?php endif; ?>
 			<?php if ( $has_peek ) : ?>
 				<img class="fr-product-img fr-product-img--peek" src="<?php echo esc_url( $fr['peek_img'] ); ?>" width="1000" height="666" alt="<?php echo esc_attr( $fr['peek_alt'] ); ?>" loading="lazy">
 			<?php endif; ?>
@@ -58,10 +77,7 @@ $has_peek = ! empty( $fr['peek_img'] );
 	</div>
 
 	<div class="fr-product-info">
-		<?php if ( $fr['label'] ) : ?>
-			<p class="fr-product-label"><?php echo esc_html( $fr['label'] ); ?></p>
-		<?php endif; ?>
-
+		<p class="fr-product-label"><?php echo esc_html( $fr['label'] ); ?></p>
 		<h3 class="fr-product-title"><?php echo esc_html( $fr['title'] ); ?></h3>
 
 		<?php if ( $fr['desc'] ) : ?>
@@ -83,7 +99,7 @@ $has_peek = ! empty( $fr['peek_img'] );
 			<?php if ( $fr['price_html'] ) : ?>
 				<span class="fr-product-price"><?php echo wp_kses_post( $fr['price_html'] ); ?></span>
 			<?php endif; ?>
-			<a class="fr-btn-solid" href="<?php echo esc_url( $fr['url'] ); ?>">Descoperă jocul →</a>
+			<a class="fr-btn-solid" href="<?php echo esc_url( $fr['url'] ); ?>">Descoperă experiența →</a>
 		</div>
 
 		<?php if ( $has_peek ) : ?>

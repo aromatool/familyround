@@ -44,14 +44,46 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 	const [hovered, setHovered] = useState(null);
 	const [cw, setCw] = useState(0);
 	const [query, setQuery] = useState('');
+	const [codeInput, setCodeInput] = useState(() => variant === 'home' ? '' : (new URLSearchParams(window.location.search).get('code') || ''));
+	const [requestedCode, setRequestedCode] = useState(() => variant === 'home' ? '' : (new URLSearchParams(window.location.search).get('code') || ''));
+	const [appliedCode, setAppliedCode] = useState('');
+	const [filterError, setFilterError] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const restUrl = (window.frData && window.frData.restUrl) || '';
-		fetch(`${restUrl}/map/points`)
-			.then((res) => (res.ok ? res.json() : Promise.reject(res)))
-			.then(setData)
-			.catch(() => setError(true));
-	}, []);
+		const controller = new AbortController();
+		setLoading(true);
+		setFilterError('');
+		const endpoint = `${restUrl}/map/points${requestedCode ? `?code=${encodeURIComponent(requestedCode)}` : ''}`;
+		fetch(endpoint, { signal: controller.signal, cache: 'no-store' })
+			.then(async (res) => {
+				const result = await res.json();
+				if (!res.ok) throw new Error(result.message || 'Nu am putut încărca harta.');
+				return result;
+			})
+			.then((result) => {
+				setData(result);
+				setAppliedCode(result.filtered_code || '');
+				setSelected(null);
+				setHovered(null);
+				setQuery('');
+				setError(false);
+				if (variant !== 'home') {
+					const url = new URL(window.location.href);
+					if (result.filtered_code) url.searchParams.set('code', result.filtered_code);
+					else url.searchParams.delete('code');
+					window.history.replaceState(null, '', url);
+				}
+			})
+			.catch((problem) => {
+				if (problem.name === 'AbortError') return;
+				if (requestedCode) setFilterError(problem.message);
+				else setError(true);
+			})
+			.finally(() => { if (!controller.signal.aborted) setLoading(false); });
+		return () => controller.abort();
+	}, [requestedCode, variant]);
 
 	useEffect(() => {
 		if (svgRef.current && !markersHost) {
@@ -237,7 +269,7 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 		<div className="fr-map-stats">
 			<div className="fr-map-stat">
 				<span className="fr-map-stat-num">{totalGames}</span>
-				<span className="fr-map-stat-label">{totalGames === 1 ? 'joc cumpărat' : 'jocuri cumpărate'}</span>
+				<span className="fr-map-stat-label">{totalGames === 1 ? 'joc cumpărat' : 'jocuri cumpărate'}{appliedCode ? ' prin acest cod' : ''}</span>
 			</div>
 			<div className="fr-map-stat">
 				<span className="fr-map-stat-num">{totalCities}</span>
@@ -248,10 +280,12 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 
 	const statusMsg = error
 		? 'Harta nu este disponibilă momentan.'
-		: !data
+		: filterError && !data
+			? 'Introdu un cod valid ca să vezi localitățile recomandărilor tale.'
+		: !data || loading
 			? 'Se încarcă harta…'
 			: plotted.length === 0
-				? 'Povestea noastră abia începe.'
+				? appliedCode ? 'Încă nu există jocuri cumpărate prin acest cod.' : 'Povestea noastră abia începe.'
 				: null;
 
 	// Homepage: two columns — copy (title, explanation, totals, link) left, map right.
@@ -260,6 +294,9 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 			<div className="fr-map fr-map--home">
 				<div className="fr-map-copy">
 					<div className="fr-map-copy-head">
+						<svg className="fr-thread fr-thread--opener" viewBox="0 0 160 40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+							<path d="M2 20 C 28 3, 52 37, 78 20 C 104 3, 128 37, 158 19" />
+						</svg>
 						<p className="fr-collection-label">Harta FamilyRound</p>
 						{title && <h2>{title}</h2>}
 						{subtitle && <p className="fr-map-copy-sub">{subtitle}</p>}
@@ -285,6 +322,22 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 	// Dedicated page: centered map, totals and the searchable locality list.
 	return (
 		<div className="fr-map">
+			<div className="fr-map-code-panel">
+				<p className="fr-map-code-kicker">Urmărește cercul tău</p>
+				<h2>Unde a ajuns ideea prin tine?</h2>
+				<p>Introdu codul de recomandare și vezi localitățile în care au fost cumpărate jocuri prin el.</p>
+				<form className="fr-map-code-form" onSubmit={(event) => {
+					event.preventDefault();
+					const nextCode = codeInput.replace(/[^a-z0-9]/gi, '').toUpperCase();
+					if (nextCode) setRequestedCode(nextCode);
+				}}>
+					<label className="fr-visually-hidden" htmlFor="fr-map-code">Cod de recomandare</label>
+					<input id="fr-map-code" type="text" autoComplete="off" maxLength="20" placeholder="Codul tău de recomandare" value={codeInput} onChange={(event) => setCodeInput(event.target.value)} required />
+					<button type="submit" disabled={loading}>Vezi pe hartă <span aria-hidden="true">→</span></button>
+				</form>
+				{filterError && <p className="fr-map-code-error" role="alert">{filterError}</p>}
+				{(appliedCode || requestedCode) && <p className="fr-map-code-active">{appliedCode && <>Privești jocurile cumpărate prin <strong>{appliedCode}</strong>. </>}<button type="button" onClick={() => { setCodeInput(''); setRequestedCode(''); }}>Vezi toate jocurile</button></p>}
+			</div>
 			{mapStage}
 
 			{statusMsg ? (

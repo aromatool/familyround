@@ -8,6 +8,7 @@ export default function PiggybankCounter({ compact = false }) {
 	const [data, setData] = useState(null);
 	const [error, setError] = useState(false);
 	const [barWidth, setBarWidth] = useState(0);
+	const [shownAmount, setShownAmount] = useState(0);
 
 	useEffect(() => {
 		const restUrl = (window.frData && window.frData.restUrl) || '';
@@ -34,40 +35,60 @@ export default function PiggybankCounter({ compact = false }) {
 		const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (reduce) {
 			setBarWidth(pct);
+			setShownAmount(allocated);
 			return undefined;
 		}
 
-		let settled = false;
-		const grow = () => {
-			if (!settled) {
-				settled = true;
-				setBarWidth(pct);
-			}
+		// Count the amount up from 0 — anchored to rAF's own timestamp so it animates
+		// frame-by-frame (mixing performance.now() with the rAF clock made it snap
+		// straight to the final value on frame one).
+		let raf = 0;
+		const countUp = (to) => {
+			const dur = 1600;
+			let start = null;
+			const tick = (now) => {
+				if (start === null) start = now;
+				const t = Math.min(1, (now - start) / dur);
+				setShownAmount(to * (1 - Math.pow(1 - t, 3)));
+				if (t < 1) raf = requestAnimationFrame(tick);
+				else setShownAmount(to);
+			};
+			raf = requestAnimationFrame(tick);
 		};
+
+		let settled = false;
+		const finish = (animate) => {
+			if (settled) return;
+			settled = true;
+			setBarWidth(pct);
+			if (animate) countUp(allocated);
+			else setShownAmount(allocated);
+		};
+
 		const el = panelRef.current;
 		if ('IntersectionObserver' in window && el) {
 			const io = new IntersectionObserver(
 				(entries) => entries.forEach((e) => {
 					if (e.isIntersecting) {
-						grow();
+						finish(true);
 						io.disconnect();
 					}
 				}),
-				{ threshold: 0.2 }
+				{ threshold: 0.25 }
 			);
 			io.observe(el);
-			const t = setTimeout(() => {
-				grow();
-				io.disconnect();
-			}, 1200);
+			// Fail-safe only: if the panel is never scrolled into view, show the final
+			// value — no wasted off-screen animation.
+			const t = setTimeout(() => { finish(false); io.disconnect(); }, 6000);
 			return () => {
 				clearTimeout(t);
+				cancelAnimationFrame(raf);
 				io.disconnect();
 			};
 		}
-		grow();
-		return undefined;
-	}, [data, mission, pct]);
+		finish(true);
+		return () => cancelAnimationFrame(raf);
+	}, [data, mission, pct, allocated]);
 
 	if (error) return null;
 
@@ -80,12 +101,13 @@ export default function PiggybankCounter({ compact = false }) {
 			) : !mission ? (
 				<>
 					<p className="fr-pp-label">Pușculița, până acum</p>
-					<p className="fr-pp-empty">Pregătim următoarea misiune FamilyRound.</p>
+					{allocated > 0 && <p className="fr-pp-amount">{fmtLei(allocated)} lei</p>}
+					<p className="fr-pp-empty">{allocated > 0 ? 'Suma este alocată. Următoarea cauză va fi anunțată aici.' : 'Pregătim următoarea misiune FamilyRound.'}</p>
 				</>
 			) : (
 				<>
 					<p className="fr-pp-label">Pușculița, până acum</p>
-					<p className="fr-pp-amount">{fmtLei(allocated)} lei</p>
+					<p className="fr-pp-amount">{fmtLei(shownAmount)} lei</p>
 					<p className="fr-pp-amount-sub">puși deoparte din vânzări</p>
 
 					<div className="fr-pp-progress">
@@ -98,7 +120,7 @@ export default function PiggybankCounter({ compact = false }) {
 							aria-valuemax={100}
 							aria-label={`Progres către obiectiv: ${fmtPct(pct)}%`}
 						>
-							<span className="fr-pp-bar-fill" style={{ width: `${barWidth}%` }} />
+							<span className="fr-pp-bar-fill" style={{ transform: `scaleX(${Math.max(0, Math.min(1, barWidth / 100))})` }} />
 						</div>
 					</div>
 

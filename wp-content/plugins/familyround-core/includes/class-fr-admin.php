@@ -14,6 +14,23 @@ class FR_Admin {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
 		add_action( 'admin_post_fr_create_mission', array( __CLASS__, 'handle_create_mission' ) );
 		add_action( 'admin_post_fr_set_mission_status', array( __CLASS__, 'handle_set_status' ) );
+		add_action( 'woocommerce_product_options_general_product_data', array( __CLASS__, 'render_game_eligibility' ) );
+		add_action( 'woocommerce_admin_process_product_object', array( __CLASS__, 'save_game_eligibility' ) );
+	}
+
+	public static function render_game_eligibility() {
+		$product = wc_get_product( get_the_ID() );
+		$value = $product && 'no' === $product->get_meta( '_fr_piggybank_eligible', true ) ? 'no' : 'yes';
+		woocommerce_wp_checkbox( array(
+			'id'          => '_fr_piggybank_eligible',
+			'label'       => 'Joc FamilyRound eligibil',
+			'description' => 'Fiecare exemplar din comandă adaugă 5 lei în Pușculiță; o recomandare validă adaugă încă 5 lei.',
+			'value'       => $value,
+		) );
+	}
+
+	public static function save_game_eligibility( $product ) {
+		$product->update_meta_data( '_fr_piggybank_eligible', isset( $_POST['_fr_piggybank_eligible'] ) ? 'yes' : 'no' );
 	}
 
 	public static function register_menu() {
@@ -139,6 +156,9 @@ class FR_Admin {
 				'status'      => 'active',
 			)
 		);
+		if ( $wpdb->insert_id ) {
+			self::assign_unassigned_contributions( (int) $wpdb->insert_id );
+		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=fr-piggybank' ) );
 		exit;
@@ -157,11 +177,20 @@ class FR_Admin {
 		if ( 'activa' === $status ) {
 			$wpdb->update( $wpdb->prefix . 'fr_missions', array( 'status' => 'finalizata' ), array( 'status' => 'active' ) );
 			$wpdb->update( $wpdb->prefix . 'fr_missions', array( 'status' => 'active' ), array( 'id' => $mission_id ) );
+			self::assign_unassigned_contributions( $mission_id );
 		} else {
 			$wpdb->update( $wpdb->prefix . 'fr_missions', array( 'status' => $status, 'end_date' => current_time( 'mysql' ) ), array( 'id' => $mission_id ) );
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=fr-piggybank' ) );
 		exit;
+	}
+
+	private static function assign_unassigned_contributions( $mission_id ) {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE {$wpdb->prefix}fr_piggybank_ledger SET mission_id = %d WHERE mission_id IS NULL",
+			$mission_id
+		) );
 	}
 }

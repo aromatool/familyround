@@ -37,16 +37,40 @@ class FR_REST {
 	}
 
 	/**
-	 * Date agregate, fără nicio informație personală — doar localitate, județ și număr de comenzi.
+	 * Date agregate, fără informații personale: jocuri din comenzi confirmate.
 	 */
 	public static function get_map_points( WP_REST_Request $request ) {
 		global $wpdb;
-
-		$rows = $wpdb->get_results(
-			"SELECT locality, county, total_count, first_delivery_at, last_delivery_at
-			 FROM {$wpdb->prefix}fr_map_points
-			 ORDER BY total_count DESC"
-		);
+		$raw_code = $request->get_param( 'code' );
+		$code = is_string( $raw_code ) ? FR_Referrals::normalize_code( $raw_code ) : '';
+		if ( null !== $raw_code && ! $code ) {
+			return new WP_Error( 'fr_missing_code', 'Introdu codul de recomandare.', array( 'status' => 400 ) );
+		}
+		if ( $code ) {
+			$referrer_id = (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}fr_referrers WHERE referral_code = %s",
+				$code
+			) );
+			if ( ! $referrer_id ) {
+				return new WP_Error( 'fr_unknown_code', 'Nu am găsit acest cod. Verifică-l și încearcă din nou.', array( 'status' => 404 ) );
+			}
+			$rows = $wpdb->get_results( $wpdb->prepare(
+				"SELECT m.locality, m.county, SUM(m.game_units) AS total_count, MIN(m.confirmed_at) AS first_confirmed_at
+				 FROM {$wpdb->prefix}fr_map_orders m
+				 INNER JOIN {$wpdb->prefix}fr_referral_orders r ON r.order_id = m.order_id
+				 WHERE r.referrer_id = %d AND r.status = 'valid'
+				 GROUP BY m.locality, m.county
+				 ORDER BY total_count DESC",
+				$referrer_id
+			) );
+		} else {
+			$rows = $wpdb->get_results(
+				"SELECT locality, county, SUM(game_units) AS total_count, MIN(confirmed_at) AS first_confirmed_at
+				 FROM {$wpdb->prefix}fr_map_orders
+				 GROUP BY locality, county
+				 ORDER BY total_count DESC"
+			);
+		}
 
 		$points = array_map(
 			function ( $row ) {
@@ -54,7 +78,7 @@ class FR_REST {
 					'locality'   => $row->locality,
 					'county'     => $row->county,
 					'count'      => (int) $row->total_count,
-					'is_new'     => strtotime( $row->first_delivery_at ) >= strtotime( '-7 days' ),
+					'is_new'     => strtotime( $row->first_confirmed_at ) >= strtotime( '-7 days' ),
 				);
 			},
 			$rows
@@ -64,6 +88,7 @@ class FR_REST {
 			array(
 				'points'        => $points,
 				'total_cities'  => count( $points ),
+				'filtered_code' => $code,
 			),
 			200
 		);
@@ -104,10 +129,14 @@ class FR_REST {
 		);
 
 		if ( ! $mission ) {
+			$unassigned = (float) $wpdb->get_var(
+				"SELECT COALESCE(SUM(amount), 0) FROM {$wpdb->prefix}fr_piggybank_ledger
+				 WHERE mission_id IS NULL AND status != 'cancelled'"
+			);
 			return new WP_REST_Response(
 				array(
 					'mission'       => null,
-					'allocated'     => 0,
+					'allocated'     => $unassigned,
 					'donated'       => 0,
 					'cause'         => null,
 					'past_missions' => $past,

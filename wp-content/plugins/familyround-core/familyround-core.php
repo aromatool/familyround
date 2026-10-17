@@ -2,7 +2,7 @@
 /**
  * Plugin Name: FamilyRound Core
  * Description: Pușculița, Programul de recomandări și Harta FamilyRound — logică proprie, independentă de temă.
- * Version: 0.1.0
+ * Version: 0.2.5
  * Author: FamilyRound
  * Text Domain: familyround-core
  */
@@ -11,13 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_CORE_VERSION', '0.1.0' );
+define( 'FR_CORE_VERSION', '0.2.5' );
 define( 'FR_CORE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'FR_CORE_URL', plugin_dir_url( __FILE__ ) );
 
 require_once FR_CORE_PATH . 'includes/class-fr-db.php';
 require_once FR_CORE_PATH . 'includes/class-fr-rest.php';
 require_once FR_CORE_PATH . 'includes/class-fr-referrals.php';
+require_once FR_CORE_PATH . 'includes/class-fr-referral-digest.php';
 require_once FR_CORE_PATH . 'includes/class-fr-checkout.php';
 require_once FR_CORE_PATH . 'includes/class-fr-orders.php';
 require_once FR_CORE_PATH . 'includes/class-fr-admin.php';
@@ -27,6 +28,7 @@ register_activation_hook( __FILE__, array( 'FR_DB', 'activate' ) );
 
 add_action( 'plugins_loaded', function () {
 	FR_Referrals::init();
+	FR_Referral_Digest::init();
 
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		add_action( 'admin_notices', function () {
@@ -34,6 +36,18 @@ add_action( 'plugins_loaded', function () {
 		} );
 		return;
 	}
+
+	// The order backfill needs WooCommerce and its order post types fully loaded.
+	add_action( 'wp_loaded', array( 'FR_DB', 'maybe_upgrade' ), 20 );
+	add_action( 'admin_notices', function () {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+		$skipped = array_map( 'intval', (array) get_option( 'fr_map_backfill_skipped_ids', array() ) );
+		if ( $skipped ) {
+			echo '<div class="notice notice-warning"><p>FamilyRound: harta nu a putut citi comenzile WooCommerce cu ID-urile ' . esc_html( implode( ', ', $skipped ) ) . '. Verifică aceste înregistrări înainte de lansare.</p></div>';
+		}
+	} );
 
 	FR_REST::init();
 	FR_Checkout::init();

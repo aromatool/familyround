@@ -1,275 +1,91 @@
-<?php if ( ! defined( 'ABSPATH' ) ) exit;
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 get_header();
-
-$shop_url          = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/magazin' );
-$images_url        = get_theme_file_uri( 'assets/images/' );
-$first_product_url = $shop_url;
-
-if ( function_exists( 'wc_get_products' ) ) {
-	$fr_products = wc_get_products( array( 'limit' => 1, 'orderby' => 'date', 'order' => 'ASC', 'status' => 'publish' ) );
-	if ( ! empty( $fr_products ) ) {
-		$first_product_url = get_permalink( $fr_products[0]->get_id() );
+$images_url = get_theme_file_uri( 'assets/images/' );
+$shop_url = function_exists( 'wc_get_page_id' ) ? get_permalink( wc_get_page_id( 'shop' ) ) : home_url( '/magazin/' );
+$fr_games = function_exists( 'wc_get_products' ) ? wc_get_products( array( 'limit' => -1, 'orderby' => 'date', 'order' => 'ASC', 'status' => 'publish' ) ) : array();
+$first_game_url = $shop_url;
+$family_box_published = false;
+foreach ( $fr_games as $fr_game ) {
+	if ( false !== stripos( $fr_game->get_name(), '30 de provocări' ) ) {
+		$first_game_url = get_permalink( $fr_game->get_id() );
+	}
+	if ( false !== stripos( $fr_game->get_name(), 'Family Box' ) ) {
+		$family_box_published = true;
 	}
 }
 ?>
+<main id="content" class="fr-home">
+ <section class="fr-home-hero" aria-labelledby="fr-home-title">
+  <div class="fr-home-hero-image"><img src="<?php echo esc_url( $images_url . 'hero-family-moment.jpg' ); ?>" width="1672" height="941" alt="O familie de mai multe generații stă împreună, râde și povestește" fetchpriority="high"></div>
+  <div class="fr-container fr-home-hero-inner">
+   <div class="fr-home-hero-copy">
+    <p class="fr-home-overline">FamilyRound · experiențe pentru familii</p>
+    <h1 id="fr-home-title">Din timpul împreună se nasc <em>poveștile voastre.</em></h1>
+    <p>Jocuri care vă dau un motiv să ieșiți din rutină, să vă descoperiți altfel și să adunați amintiri numai ale voastre.</p>
+   </div>
+   <span class="fr-home-hero-aside" aria-hidden="true">Un cerc. Nenumărate feluri de a fi împreună.</span>
+  </div>
+  <nav class="fr-home-hero-chapters" aria-label="Descoperă universul FamilyRound" data-fr-hero-chapters>
+   <a class="fr-home-hero-chapter" href="#experiente">
+    <span class="fr-home-hero-chapter-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M7 10.5h18v15H7zM10.5 7h11M12 15.5h8M12 20.5h5"/></svg></span>
+    <span class="fr-home-hero-chapter-copy"><span>Experiențe</span><strong>Jocuri care vă aduc mai aproape.</strong><small>Descoperă colecția</small></span>
+    <span class="fr-home-hero-chapter-arrow" aria-hidden="true">↘</span>
+   </a>
+   <a class="fr-home-hero-chapter fr-home-hero-chapter--giving is-active" href="#pusculita">
+    <span class="fr-home-hero-chapter-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 26s-9-5.2-9-12.1A5.9 5.9 0 0 1 17.1 9.8 5.9 5.9 0 0 1 27 13.9C27 20.8 16 26 16 26Z"/><path d="M13 14h6M16 11v6"/></svg></span>
+    <span class="fr-home-hero-chapter-copy"><span>Pușculița</span><strong><b>5 lei</b> din fiecare joc merg mai departe.</strong><small>Prin recomandare pot deveni 10 lei</small></span>
+    <span class="fr-home-hero-chapter-arrow" aria-hidden="true">↘</span>
+   </a>
+   <a class="fr-home-hero-chapter" href="#harta">
+    <span class="fr-home-hero-chapter-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 27s8-7.4 8-15a8 8 0 1 0-16 0c0 7.6 8 15 8 15Z"/><circle cx="16" cy="12" r="2.75"/></svg></span>
+    <span class="fr-home-hero-chapter-copy"><span>Harta</span><strong>Vezi cum crește cercul FamilyRound.</strong><small>Descoperă localitățile</small></span>
+    <span class="fr-home-hero-chapter-arrow" aria-hidden="true">↘</span>
+   </a>
+  </nav>
+ </section>
 
-<section class="fr-hero">
-	<img class="fr-hero-photo" src="<?php echo esc_url( $images_url . 'hero-atmosphere.jpg' ); ?>" width="1400" height="788" alt="O familie pe un deal, așezată pe o pătură, petrecând timp împreună în natură">
+ <section class="fr-home-belief" id="ideea" aria-labelledby="fr-home-belief-title">
+  <div class="fr-container fr-home-belief-grid">
+   <div class="fr-home-belief-copy fr-fade-up"><p class="fr-home-overline">De ce existăm</p><h2 id="fr-home-belief-title">Zilele se umplu repede. <em>Clipele voastre merită loc.</em></h2><p>Între serviciu, școală și tot ce trebuie făcut, timpul împreună ajunge ușor pe lista de „cândva”. FamilyRound creează începuturi simple pentru momente în care să fiți cu adevărat acolo, unii pentru alții.</p><a class="fr-home-textlink" href="<?php echo esc_url( home_url( '/povestea-noastra/' ) ); ?>">Povestea FamilyRound <span aria-hidden="true">↗</span></a></div>
+   <figure class="fr-home-belief-image fr-fade-up"><img src="<?php echo esc_url( $images_url . 'story-family.jpg' ); ?>" width="1200" height="800" alt="O mamă și copiii ei construiesc împreună un cort din pături, acasă" loading="lazy"><figcaption>Uneori, o pătură devine începutul unei aventuri.</figcaption></figure>
+  </div>
+ </section>
 
-	<div class="fr-container fr-hero-inner">
-		<div class="fr-hero-text">
-			<span class="fr-eyebrow">Jocuri pentru timpul care contează</span>
-			<h1>Mai mult timp,<br><em>împreună.</em></h1>
-			<p>Jocuri și experiențe care aduc familia împreună.</p>
-			<a class="fr-cta" href="#jocuri">Descoperă experiențele →</a>
-		</div>
-	</div>
-</section>
+ <section class="fr-home-rhythm" aria-labelledby="fr-home-rhythm-title">
+  <div class="fr-container fr-home-rhythm-heading fr-fade-up"><span class="fr-home-rhythm-numeral" aria-hidden="true">∞</span><div><h2 id="fr-home-rhythm-title">Nu există un singur fel de a fi <em>împreună.</em></h2><p>Unele zile cer o aventură. Alte seri, doar un loc la aceeași masă. Noi le facem loc pe amândouă.</p></div></div>
+  <div class="fr-home-scenes" data-fr-scenes>
+   <figure class="fr-home-scene fr-home-scene--outside"><img src="<?php echo esc_url( $images_url . 'home/picnic.webp' ); ?>" width="1122" height="1402" alt="Părinți și copii râd împreună la un picnic" loading="lazy"><figcaption><span>01 / Dincolo de rutina de azi</span><strong>O zi care se povestește din nou.</strong></figcaption></figure>
+   <figure class="fr-home-scene fr-home-scene--inside"><img src="<?php echo esc_url( $images_url . 'together-try.jpg' ); ?>" width="1200" height="800" alt="O mamă și fiica ei modelează lut împreună acasă" loading="lazy"><figcaption><span>02 / Chiar aici, acasă</span><strong>Un moment numai al vostru.</strong></figcaption></figure>
+  </div>
+  <div class="fr-container fr-home-rhythm-foot"><span>Feluri diferite de a vă apropia.</span><span>Același cerc.</span></div>
+ </section>
 
-<div class="fr-ribbon">
-	<div class="fr-container fr-ribbon-inner">
-		<p>Din fiecare joc cumpărat, <strong>5 lei</strong> merg în Pușculița FamilyRound.</p>
-		<a href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">Descoperă Pușculița →</a>
-	</div>
-</div>
+ <section class="fr-home-experiences" id="experiente" aria-labelledby="fr-home-exp-title"><div class="fr-container">
+  <div class="fr-home-section-intro fr-fade-up"><p class="fr-home-overline">Colecția FamilyRound</p><h2 id="fr-home-exp-title">Experiențe care încep cu un joc.<br><em>Și continuă cu voi.</em></h2><p>Fiecare joc deschide o altă cale către timpul petrecut împreună. Alegeți-o pe cea care vi se potrivește acum.</p></div>
+  <?php
+  $display_games = ! empty( $fr_games ) ? $fr_games : array( null );
+  foreach ( $display_games as $index => $game ) :
+   $is_first = ! $game || false !== stripos( $game->get_name(), '30 de provocări' );
+   $title = $game ? preg_replace( '/^\s*FamilyRound\s*[–—\-]\s*/u', '', $game->get_name() ) : '30 de provocări în familie';
+   $photo = $is_first ? $images_url . 'unbox/lifestyle_masa.webp' : ( $game && $game->get_image_id() ? wp_get_attachment_image_url( $game->get_image_id(), 'large' ) : $images_url . 'product-box.jpg' );
+   $desc = $is_first ? 'O cutie cu 30 de invitații la aventuri adevărate: un picnic, o călătorie cu trenul, o idee nebunească făcută împreună. Iar harta amintirilor păstrează pe perete ce a rămas din fiecare zi.' : trim( wp_strip_all_tags( $game->get_short_description() ) );
+   $url = $game ? get_permalink( $game->get_id() ) : $shop_url;
+  ?>
+   <article class="fr-home-feature fr-fade-up"><div class="fr-home-feature-visual"><img src="<?php echo esc_url( $photo ); ?>" width="1448" height="1086" alt="<?php echo esc_attr( $is_first ? 'Concept vizual al cutiei 30 de provocări în familie, alături de cartonașe și harta amintirilor' : $title ); ?>" loading="lazy"></div><div class="fr-home-feature-copy"><p class="fr-home-feature-index"><?php echo esc_html( sprintf( '%02d', $index + 1 ) ); ?> · <?php echo $is_first ? 'Prima experiență' : 'Experiență FamilyRound'; ?></p><h3><?php echo esc_html( $title ); ?></h3><?php if ( $desc ) : ?><p><?php echo esc_html( $desc ); ?></p><?php endif; ?><a class="fr-home-button" href="<?php echo esc_url( $url ); ?>">Descoperă experiența <span aria-hidden="true">↗</span></a><?php if ( $is_first ) : ?><span class="fr-home-feature-note">30 de cartonașe · harta amintirilor · accesorii pentru amintiri</span><?php endif; ?></div></article>
+  <?php endforeach; ?>
+  <?php if ( ! $family_box_published ) : ?>
+  <div class="fr-home-next fr-fade-up"><div class="fr-home-next-copy"><p class="fr-home-feature-index"><?php echo esc_html( sprintf( '%02d', count( $display_games ) + 1 ) ); ?> · În lucru</p><h3>Family Box</h3><p>Cinci seturi a câte 40 de cartonașe, gândite pentru joaca de acasă: trageți un cartonaș, intrați în joc și descoperiți ceva nou unii despre alții. O pregătim cu grijă.</p><span class="fr-home-next-status">Următoarea experiență se pregătește <span aria-hidden="true">↗</span></span></div><div class="fr-home-next-art" aria-hidden="true"><div class="fr-home-next-word"><span>Râs</span><span>Descoperă</span><span>Imaginează</span><span>Între noi</span><span>Mișcă</span></div></div></div>
+  <?php endif; ?>
+ </div></section>
 
-<?php
-// Collection — built from real products only; no demo products.
-$fr_games = array();
-if ( function_exists( 'wc_get_products' ) ) {
-	$fr_games = wc_get_products( array(
-		'limit'   => -1,
-		'orderby' => 'date',
-		'order'   => 'ASC',
-		'status'  => 'publish',
-	) );
-}
+ <section class="fr-home-keepsake" aria-labelledby="fr-home-keepsake-title"><div class="fr-home-keepsake-image"><img src="<?php echo esc_url( $images_url . 'unbox/harta_perete.webp' ); ?>" width="1122" height="1402" alt="Concept vizual al unei hărți a amintirilor cu fotografii, desene și mici suveniruri, agățată pe perete" loading="lazy"></div><div class="fr-home-keepsake-copy fr-fade-up"><p class="fr-home-overline">Ce rămâne după joacă</p><h2 id="fr-home-keepsake-title">Nu doar „îți amintești când?”.<br><em>Ci ceva de arătat.</em></h2><p>Prima noastră experiență vine cu o hartă a amintirilor. Lipiți o fotografie, un bilet, o frunză sau desenul copilului. În timp, peretele vostru spune povestea familiei mai bine decât ar putea-o face orice joc.</p><a class="fr-home-textlink" href="<?php echo esc_url( $first_game_url ); ?>">Vezi prima experiență <span aria-hidden="true">↗</span></a></div></section>
 
-// Simple how-to-play for the game presentation.
-$fr_steps = array(
-	array( 'title' => 'Alegeți o provocare', 'text' => 'Una nouă oricând. Fără reguli, fără final.' ),
-	array( 'title' => 'Trăiți-o împreună', 'text' => 'Bucurați-vă de fiecare clipă petrecută împreună.' ),
-	array( 'title' => 'Lăsați o urmă pe perete', 'text' => 'Un desen, o poză, o frunză — pe harta amintirilor.' ),
-);
+ <section class="fr-piggybank fr-home-giving" id="pusculita" aria-labelledby="fr-home-giving-title"><div class="fr-container fr-piggybank-grid"><div class="fr-piggybank-textcol fr-fade-up"><div class="fr-piggybank-intro-block"><p class="fr-home-overline">Pușculița FamilyRound</p><h2 id="fr-home-giving-title">Cercul poate crește <em>dincolo de familia voastră.</em></h2><p class="fr-piggybank-intro">Pentru fiecare joc FamilyRound cumpărat, punem noi deoparte 5 lei în Pușculiță. La prima comandă a fiecărei familii venite prin linkul vostru de recomandare, mai adăugăm 5 lei pentru fiecare joc eligibil. Sumele alocate vor sprijini cauze pe care le vom prezenta transparent.</p></div><div class="fr-piggybank-detail-block"><div class="fr-contrib"><div class="fr-contrib-row"><span class="fr-contrib-amount">5 lei</span><span class="fr-contrib-label">puși deoparte pentru fiecare joc</span></div><div class="fr-contrib-row"><span class="fr-contrib-amount">+5 lei</span><span class="fr-contrib-label">per joc din prima comandă recomandată</span></div></div><p class="fr-contrib-total">La prima comandă prin recomandare, contribuția poate ajunge la 10 lei per joc. Voi nu plătiți nimic în plus.</p><div class="fr-home-giving-share"><strong>Un link personal. O idee împărtășită.</strong><span>Trimite-l unei familii dragi sau pune-l într-o postare. La prima ei comandă, noi adăugăm încă 5 lei pentru fiecare joc eligibil.</span></div><a class="fr-cta-ghost fr-cta-ghost--on-dark" href="<?php echo esc_url( home_url( '/da-timpul-mai-departe/' ) ); ?>">Primește linkul tău →</a></div></div><div class="fr-piggybank-panel"><div data-fr-island="piggybank-counter" data-fr-variant="compact"></div></div></div></section>
 
-$fr_specs = array(
-	array( 'num' => '30', 'label' => 'provocări în familie' ),
-	array( 'num' => '1', 'label' => 'hartă a amintirilor' ),
-	array( 'num' => '∞', 'label' => 'momente de adăugat' ),
-);
+ <section class="fr-home-map-intro" id="harta"><div class="fr-container fr-home-map-intro-grid fr-fade-up"><p class="fr-home-overline">Harta FamilyRound</p><div><h2>Din casa voastră, <em>în tot mai multe case.</em></h2><p>Pe hartă se aprind localitățile din care au fost cumpărate experiențele FamilyRound. Fiecare punct înseamnă un nou început undeva în țară.</p></div></div></section>
+ <section class="fr-mapsection fr-home-map"><div class="fr-container"><div data-fr-island="map-points" data-fr-variant="home" data-title="Unde a ajuns FamilyRound" data-subtitle="Localitățile din care au fost cumpărate experiențele noastre." data-href="<?php echo esc_url( home_url( '/harta-familyround/' ) ); ?>"></div></div></section>
 
-$fr_game_desc = 'O cutie premium, de pus în bibliotecă sau de dăruit. 30 de provocări care aduc familia mai aproape — iar tot ce rămâne în urma lor (un desen, o frunză, o poză) prinde pe harta amintirilor: posterul care, moment cu moment, devine tabloul familiei voastre.';
-
-$fr_items = array();
-foreach ( $fr_games as $index => $game ) {
-	// Clean display title: strip a leading "FamilyRound –/-" brand prefix if present.
-	$name  = $game->get_name();
-	$title = preg_replace( '/^\s*FamilyRound\s*[–—\-]\s*/u', '', $name );
-
-	// Media: prefer the product's own images, fall back to the brand concept shots.
-	$set_img  = $images_url . 'hero-lifestyle.jpg';
-	$set_alt  = 'Cutia „' . $title . '”, cartonașele și posterul FamilyRound, pe masa din sufragerie';
-	if ( has_post_thumbnail( $game->get_id() ) ) {
-		$thumb   = wp_get_attachment_image_src( get_post_thumbnail_id( $game->get_id() ), 'large' );
-		$set_img = $thumb ? $thumb[0] : $set_img;
-	}
-
-	$gallery_ids = $game->get_gallery_image_ids();
-	$peek_img    = $images_url . 'product-box.jpg';
-	$peek_alt    = 'Cutia FamilyRound deschisă, cu un cartonaș de provocare la vedere';
-	if ( ! empty( $gallery_ids ) ) {
-		$g        = wp_get_attachment_image_src( $gallery_ids[0], 'large' );
-		$peek_img = $g ? $g[0] : $peek_img;
-	}
-
-	// Short description from product data, else the approved (catchier) default copy.
-	$desc = trim( wp_strip_all_tags( $game->get_short_description() ) );
-	if ( '' === $desc ) {
-		$desc = $fr_game_desc;
-	}
-
-	$fr_items[] = array(
-		'label'      => 'De făcut împreună',
-		'title'      => $title,
-		'desc'       => $desc,
-		'specs'      => $fr_specs,
-		// Price lives on the product page, not in the homepage presentation.
-		'price_html' => '',
-		'url'        => get_permalink( $game->get_id() ),
-		'set_img'    => $set_img,
-		'set_alt'    => $set_alt,
-		'peek_img'   => $peek_img,
-		'peek_alt'   => $peek_alt,
-		'peek_label' => 'Aruncă o privire în cutie',
-		'back_label' => 'Înapoi la set',
-		'steps'      => $fr_steps,
-	);
-}
-
-// Fallback for a fresh install with no products yet — the one confirmed game.
-if ( empty( $fr_items ) ) {
-	$fr_items[] = array(
-		'label'      => 'De făcut împreună',
-		'title'      => '30 de provocări în familie',
-		'desc'       => $fr_game_desc,
-		'specs'      => $fr_specs,
-		'price_html' => '',
-		'url'        => $first_product_url,
-		'set_img'    => $images_url . 'hero-lifestyle.jpg',
-		'set_alt'    => 'Cutia FamilyRound, cartonașele și posterul, pe masa din sufragerie',
-		'peek_img'   => $images_url . 'product-box.jpg',
-		'peek_alt'   => 'Cutia FamilyRound deschisă, cu un cartonaș de provocare la vedere',
-		'peek_label' => 'Aruncă o privire în cutie',
-		'back_label' => 'Înapoi la set',
-		'steps'      => $fr_steps,
-	);
-}
-?>
-
-<section class="fr-collection" id="jocuri">
-	<div class="fr-container fr-container--wide">
-		<div class="fr-collection-intro fr-fade-up">
-			<p class="fr-collection-label">Experiențele FamilyRound</p>
-			<h2>Cu ce începe povestea voastră?</h2>
-			<p>Alege un început. Restul îl scrieți împreună.</p>
-		</div>
-
-		<?php foreach ( $fr_items as $fr_item ) : ?>
-			<?php get_template_part( 'template-parts/collection-item', null, $fr_item ); ?>
-		<?php endforeach; ?>
-
-		<p class="fr-collection-closing fr-fade-up">Un joc fără reguli și fără final — doar cercul vostru, adunat din nou. Iar din fiecare cutie, <a href="<?php echo esc_url( home_url( '/pusculita-familyround/' ) ); ?>">5 lei merg mai departe</a>, către familii mai puțin norocoase.</p>
-	</div>
-</section>
-
-<?php
-// Brand intentions — three ways to be together. Replace a photo by swapping its file,
-// edit the copy here directly; photos are decorative (not links).
-$fr_together = array(
-	array(
-		'img'   => 'together-try.jpg',
-		'w'     => 1100,
-		'h'     => 825,
-		'pos'   => '55% 42%',
-		'alt'   => 'O mamă și o fetiță modelează împreună un bol din lut la masă.',
-		'title' => 'Să încercăm ceva nou.',
-		'text'  => 'Cu loc pentru încercări și surprize.',
-		'col'   => 'fr-together-col--wide',
-	),
-	array(
-		'img'   => 'together-listen.jpg',
-		'w'     => 880,
-		'h'     => 1100,
-		'pos'   => '50% 35%',
-		'alt'   => 'O mamă ascultă cu atenție un băiat care îi povestește ceva.',
-		'title' => 'Să ne ascultăm mai mult.',
-		'text'  => 'Cu răbdare și curiozitate.',
-		'col'   => 'fr-together-col--mid',
-	),
-	array(
-		'img'   => 'together-laugh.jpg',
-		'w'     => 880,
-		'h'     => 1100,
-		'pos'   => '50% 35%',
-		'alt'   => 'O familie râzând împreună pe covor, într-o cameră luminoasă.',
-		'title' => 'Să râdem împreună.',
-		'text'  => 'Fără să ne iasă totul perfect.',
-		'col'   => '',
-	),
-);
-?>
-<section class="fr-together">
-	<div class="fr-container fr-fade-up">
-		<div class="fr-together-head">
-			<div class="fr-together-headline">
-				<p class="fr-collection-label">Mai multe feluri de a fi împreună</p>
-				<h2>Voi cum vreți să fiți împreună?</h2>
-			</div>
-			<p class="fr-together-intro">Uneori, o idee nouă. Alteori, o conversație sau un motiv de râs.</p>
-		</div>
-
-		<div class="fr-together-grid">
-			<?php foreach ( $fr_together as $t ) : ?>
-				<div class="fr-together-col <?php echo esc_attr( $t['col'] ); ?>">
-					<figure class="fr-together-figure">
-						<img src="<?php echo esc_url( $images_url . $t['img'] ); ?>" width="<?php echo esc_attr( $t['w'] ); ?>" height="<?php echo esc_attr( $t['h'] ); ?>" loading="lazy" style="object-position: <?php echo esc_attr( $t['pos'] ); ?>" alt="<?php echo esc_attr( $t['alt'] ); ?>">
-					</figure>
-					<h3 class="fr-together-title"><?php echo esc_html( $t['title'] ); ?></h3>
-					<p class="fr-together-text"><?php echo esc_html( $t['text'] ); ?></p>
-				</div>
-			<?php endforeach; ?>
-		</div>
-
-		<p class="fr-together-closing">Pentru momentele acestea creăm FamilyRound.</p>
-	</div>
-</section>
-
-<section class="fr-piggybank">
-	<div class="fr-container fr-piggybank-grid">
-		<div class="fr-piggybank-textcol fr-fade-up">
-			<div class="fr-piggybank-intro-block">
-				<p class="fr-pillar-cap fr-pillar-cap--on-dark">Pușculița FamilyRound</p>
-				<h2>Bucuria voastră ajunge mai departe.</h2>
-				<p class="fr-piggybank-intro">Din fiecare joc cumpărat, punem deoparte 5 lei pentru o cauză. Când jocul este cumpărat printr-un link de recomandare, mai adăugăm 5 lei.</p>
-			</div>
-
-			<div class="fr-piggybank-detail-block">
-				<div class="fr-contrib">
-					<div class="fr-contrib-row">
-						<span class="fr-contrib-amount">5 lei</span>
-						<span class="fr-contrib-label">din fiecare joc cumpărat</span>
-					</div>
-					<div class="fr-contrib-row">
-						<span class="fr-contrib-amount">+5 lei</span>
-						<span class="fr-contrib-label">pentru fiecare joc cumpărat prin link de recomandare</span>
-					</div>
-				</div>
-
-				<p class="fr-contrib-total">10 lei în total pentru fiecare joc cumpărat prin recomandare.</p>
-				<a class="fr-cta-ghost fr-cta-ghost--on-dark" href="<?php echo esc_url( home_url( '/da-timpul-mai-departe/' ) ); ?>">Cum funcționează recomandările →</a>
-			</div>
-		</div>
-
-		<div class="fr-piggybank-panel">
-			<div data-fr-island="piggybank-counter" data-fr-variant="compact"></div>
-		</div>
-	</div>
-</section>
-
-<section class="fr-mapsection">
-	<div class="fr-container">
-		<div
-			data-fr-island="map-points"
-			data-fr-variant="home"
-			data-title="Împreună, în tot mai multe locuri."
-			data-subtitle="Descoperă localitățile din care au fost cumpărate jocurile FamilyRound."
-			data-href="<?php echo esc_url( home_url( '/harta-familyround/' ) ); ?>"
-		></div>
-	</div>
-</section>
-
-<?php
-// Story photo — swap this one file (or the URL below) to replace the image.
-$fr_story_image = $images_url . 'story-family.jpg';
-?>
-<section class="fr-ourstory">
-	<div class="fr-container fr-container--wide fr-ourstory-grid fr-fade-up">
-		<figure class="fr-ourstory-figure">
-			<img src="<?php echo esc_url( $fr_story_image ); ?>" width="1200" height="800" alt="O familie construind un fort din pături în sufragerie, petrecând timp împreună seara">
-			<figcaption>Imagine de atmosferă · Va fi înlocuită cu fotografia noastră</figcaption>
-		</figure>
-		<div class="fr-ourstory-textcol">
-			<div class="fr-ourstory-head">
-				<p class="fr-collection-label">Povestea noastră</p>
-				<h2>O familie, ca a voastră.</h2>
-			</div>
-			<div class="fr-ourstory-body">
-				<p>FamilyRound a pornit de la o dorință simplă: să facem mai mult loc timpului petrecut împreună.</p>
-				<p>Creăm jocuri care vă dau un început — o idee, o întrebare, o provocare. Povestea o scrieți voi.</p>
-				<a class="fr-cta-ghost" href="<?php echo esc_url( home_url( '/povestea-noastra/' ) ); ?>">Cunoaște-ne povestea →</a>
-			</div>
-		</div>
-	</div>
-</section>
-
+ <section class="fr-home-close" aria-labelledby="fr-home-close-title"><div class="fr-container fr-home-close-inner fr-fade-up"><span class="fr-home-close-mark" aria-hidden="true">◌</span><p class="fr-home-overline">Cercul FamilyRound</p><h2 id="fr-home-close-title">Unele povești merită <em>spuse mai departe.</em></h2><p>Începeți una împreună. Dacă vă place ce construim, invitați și o altă familie în cerc.</p><div class="fr-home-close-actions"><a class="fr-home-button fr-home-button--light" href="<?php echo esc_url( $first_game_url ); ?>">Descoperă prima experiență <span aria-hidden="true">↗</span></a><a class="fr-home-textlink fr-home-textlink--light" href="<?php echo esc_url( home_url( '/da-timpul-mai-departe/' ) ); ?>">Dă timpul mai departe <span aria-hidden="true">↗</span></a></div></div></section>
+</main>
 <?php get_footer(); ?>
