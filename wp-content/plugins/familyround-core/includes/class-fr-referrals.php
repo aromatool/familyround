@@ -155,21 +155,54 @@ class FR_Referrals {
 		$link      = self::referral_link( $referrer->referral_code );
 		$stats = self::public_stats_link( $referrer->referral_code );
 		$wants_updates = rest_sanitize_boolean( $request->get_param( 'updates_opt_in' ) );
+		$share_text = "Vreau să-ți arăt ceva ce ne-a plăcut mult în familie: FamilyRound. Au niște jocuri care chiar te scot din rutină și vă apropie unii de alții. Și fac și ceva frumos — din fiecare comandă pun bani deoparte pentru o cauză. Dacă încerci prin linkul meu, la prima ta comandă pun chiar mai mult deoparte, fără să te coste nimic în plus:";
+		$whatsapp = fr_whatsapp_link( "{$share_text} {$link}" );
+		$facebook_share = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $link );
 
-		$body = "Salut, {$first_name}!\n\nCodul tău FamilyRound este {$referrer->referral_code}. Păstrează acest email ca să îl găsești oricând.\n\nLinkul de trimis mai departe: {$link}\n\nCând vrei să vezi câte recomandări s-au confirmat și câți lei am pus deoparte prin codul tău, intră aici: {$stats}\n\nLa prima comandă a fiecărui cumpărător venit prin linkul tău, FamilyRound adaugă încă 5 lei pentru fiecare joc eligibil în Pușculiță. Codul tău poate fi folosit de oricâte familii noi. Nimeni nu plătește în plus.\n\nMulțumim că dai timpul mai departe!";
-		if ( $wants_updates ) {
-			$body .= "\n\nAi cerut și actualizări despre recomandări. Vei primi cel mult un email pe săptămână, numai când apar comenzi noi validate. Fiecare actualizare va include un link de dezabonare.";
-		}
-		if ( ! wp_mail( $email, 'Codul tău FamilyRound, de păstrat și de dat mai departe', $body ) ) {
-			return new WP_Error( 'fr_signup_mail_failed', 'Nu am putut trimite emailul acum. Te rugăm să încerci din nou.', array( 'status' => 503 ) );
+		$updates_note = $wants_updates
+			? '<p style="margin:16px 0 0;color:#4c6253;font-size:13px;line-height:1.6;font-family: Arial, Helvetica, sans-serif;">Ai cerut și actualizări despre recomandări. Vei primi cel mult un email pe săptămână, numai când apar comenzi noi validate, cu link de dezabonare.</p>'
+			: '';
+		$html_body = '<div style="font-family: Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto;">'
+			. '<div style="padding: 34px 32px; background-color: #173b2b; text-align: center;">'
+			. '<img src="' . esc_url( get_theme_file_uri( 'assets/images/logo-icon.png' ) ) . '" width="44" height="42" alt="" style="display: block; margin: 0 auto 14px;">'
+			. '<p style="margin: 0; color: #d4b77d; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;">FAMILYROUND</p>'
+			. '<p style="margin: 10px 0 0; color: #fffaf0; font-family: Georgia, \'Times New Roman\', serif; font-size: 27px; line-height: 1.25;">Salut, ' . esc_html( $first_name ) . '!</p>'
+			. '</div>'
+			. '<div style="padding: 30px 32px; background-color: #f5efe3;">'
+			. '<p style="margin: 0 0 22px; color: #173b2b; font-size: 15px; line-height: 1.65;">Linkul tău personal e gata. Trimite-l unei familii dragi sau pune-l într-o postare — la prima ei comandă, FamilyRound pune încă 5 lei pentru fiecare joc eligibil în Pușculiță, fără cost în plus pentru nimeni.</p>'
+			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #173b2b;">CODUL TĂU</p>'
+			. '<p style="margin: 0 0 18px; padding: 14px 16px; background-color: #fffaf0; font-size: 21px; font-weight: 700; letter-spacing: .07em; color: #173b2b;">' . esc_html( $referrer->referral_code ) . '</p>'
+			. '<p style="margin: 0 0 20px; padding: 13px; background-color: #fffaf0; overflow-wrap: anywhere; font-size: 14px;"><a href="' . esc_url( $link ) . '" style="color: #173b2b; font-weight: 600;">' . esc_html( $link ) . '</a></p>'
+			. '<p style="margin: 0 0 20px; font-size: 14px; line-height: 2.7;"><a href="' . esc_url( $whatsapp ) . '" style="display: inline-block; padding: 10px 16px; background-color: #173b2b; color: #fffaf0; text-decoration: none; font-weight: 700;">Trimite pe WhatsApp</a></p>'
+			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #173b2b;">PENTRU FACEBOOK SAU INSTAGRAM</p>'
+			. '<p style="margin: 0 0 12px; color: #4c6253; font-size: 13px; line-height: 1.6;">Facebook nu ne lasă să-ți pregătim postarea automat — copiază textul de mai jos și lipește-l tu, împreună cu linkul, într-o postare sau în story:</p>'
+			. '<p style="margin: 0 0 14px; padding: 13px 16px; background-color: #fffaf0; color: #173b2b; font-size: 14px; line-height: 1.6;">' . esc_html( $share_text ) . ' ' . esc_html( $link ) . '</p>'
+			. '<p style="margin: 0 0 20px; font-size: 14px; line-height: 2.7;"><a href="' . esc_url( $facebook_share ) . '" style="display: inline-block; padding: 10px 16px; background-color: #ffffff; border: 1px solid #173b2b; color: #173b2b; text-decoration: none; font-weight: 700;">Deschide fereastra de distribuire Facebook</a></p>'
+			. '<p style="margin: 0; padding-top: 15px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6;">Codul tău poate fi folosit de oricâte familii noi; nimeni nu plătește în plus. Revino oricând să vezi recomandările validate: <a href="' . esc_url( $stats ) . '" style="color: #173b2b; font-weight: 700;">Vezi impactul codului →</a></p>'
+			. $updates_note
+			. '<p style="margin: 20px 0 0; padding-top: 16px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6;">Urmărește-ne și pe <a href="https://www.facebook.com/familyround.ro" style="color: #173b2b; font-weight: 700;">Facebook</a> și <a href="https://www.instagram.com/familyround.ro" style="color: #173b2b; font-weight: 700;">Instagram</a> — povești noi de familie, în fiecare săptămână.</p>'
+			. '</div></div>';
+
+		// The link is already created and real — never withhold it just because the
+		// welcome email had a transient delivery problem. Log it and tell the truth
+		// in the response instead of blocking the whole signup on it.
+		$mail_sent = wp_mail(
+			$email,
+			'Codul tău FamilyRound, de păstrat și de dat mai departe',
+			$html_body,
+			array( 'Content-Type: text/html; charset=UTF-8' )
+		);
+		if ( ! $mail_sent ) {
+			error_log( 'FR_Referrals::handle_signup — welcome email failed for ' . $email );
 		}
 		if ( $wants_updates ) {
 			self::opt_in_email( $first_name, $email );
 		}
 		return new WP_REST_Response(
 			array(
-				'code'      => $referrer->referral_code,
-				'link'      => $link,
+				'code'       => $referrer->referral_code,
+				'link'       => $link,
+				'email_sent' => (bool) $mail_sent,
 			),
 			200
 		);
@@ -349,7 +382,7 @@ class FR_Referrals {
 		if ( function_exists( 'wc_get_orders' ) ) {
 			$order_ids = wc_get_orders( array(
 				'billing_email' => $referrer->email,
-				'status'        => array( 'processing', 'completed' ),
+				'status'        => FR_Orders::CONFIRMED_STATUSES,
 				'limit'         => -1,
 				'return'        => 'ids',
 			) );

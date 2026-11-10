@@ -131,18 +131,23 @@ export default function PiggybankCounter({ compact = false }) {
 
 					<hr className="fr-pp-divider" />
 
-					<p className="fr-pp-label">Destinația fondurilor</p>
-					<p className="fr-pp-cause">{cause ? cause.name : 'Cauza urmează să fie anunțată.'}</p>
+					<div className="fr-pp-cause-row">
+						<div className="fr-pp-cause-text">
+							<p className="fr-pp-label">Destinația fondurilor</p>
+							<p className="fr-pp-cause">{cause ? cause.name : 'Cauza urmează să fie anunțată.'}</p>
 
-					{donated > 0 ? (
-						<p className="fr-pp-status">
-							{fmtLei(allocated)} lei alocați · <strong>{fmtLei(donated)} lei donați</strong>
-						</p>
-					) : (
-						<p className="fr-pp-status">Suma afișată este alocată, încă nedonată.</p>
-					)}
+							{donated > 0 ? (
+								<p className="fr-pp-status">
+									{fmtLei(allocated)} lei alocați · <strong>{fmtLei(donated)} lei donați</strong>
+								</p>
+							) : (
+								<p className="fr-pp-status fr-pp-status--soft">Pregătim transferul către cauza aleasă.</p>
+							)}
 
-					{cause && cause.note && <p className="fr-pp-status">{cause.note}</p>}
+							{cause && cause.note && <p className="fr-pp-status">{cause.note}</p>}
+						</div>
+						{cause?.image && <img className="fr-pp-cause-img" src={cause.image} alt="" loading="lazy" />}
+					</div>
 
 					{compact && (
 						<a className="fr-btn-solid fr-pp-btn" href={pusculitaUrl}>

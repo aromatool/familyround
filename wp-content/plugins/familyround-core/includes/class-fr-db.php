@@ -106,6 +106,15 @@ class FR_DB {
 		) $charset_collate;";
 
 		// One confirmed order is one map record; totals are derived from these rows.
+		$tables[] = "CREATE TABLE {$p}fr_prelaunch_leads (
+			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+			email VARCHAR(190) NOT NULL,
+			product_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+			created_at DATETIME NOT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY email_unique (email)
+		) $charset_collate;";
+
 		$tables[] = "CREATE TABLE {$p}fr_map_orders (
 			order_id BIGINT UNSIGNED NOT NULL,
 			locality VARCHAR(120) NOT NULL,
@@ -156,7 +165,7 @@ class FR_DB {
 				$mapped_order = false;
 				$skipped_ids[] = (int) $mapped_id;
 			}
-			if ( ! $mapped_order || ! $mapped_order->has_status( array( 'processing', 'completed' ) ) ) {
+			if ( ! $mapped_order || ! $mapped_order->has_status( FR_Orders::CONFIRMED_STATUSES ) ) {
 				$wpdb->delete( $wpdb->prefix . 'fr_map_orders', array( 'order_id' => (int) $mapped_id ) );
 			}
 		}
@@ -164,7 +173,7 @@ class FR_DB {
 		do {
 			try {
 				$order_ids = wc_get_orders( array(
-					'status' => array( 'processing', 'completed' ),
+					'status' => FR_Orders::CONFIRMED_STATUSES,
 					'limit'  => 100,
 					'paged'  => $page++,
 					'return' => 'ids',

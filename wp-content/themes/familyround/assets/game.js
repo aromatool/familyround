@@ -19,8 +19,38 @@
 		else submit.click();
 	});
 
-	// Reveals (fade + rise) and the fan assembly.
-	var items = [].slice.call(root.querySelectorAll('.rev, .gp-fan'));
+	// Prelaunch email capture: replaces the real add-to-cart form (see FR_PRELAUNCH).
+	var preForm = root.querySelector('[data-fr-prelaunch-form]');
+	if (preForm) {
+		preForm.addEventListener('submit', function (event) {
+			event.preventDefault();
+			var emailField = preForm.querySelector('input[type="email"]');
+			var btn = preForm.querySelector('button');
+			btn.disabled = true;
+			fetch(preForm.dataset.endpoint, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ email: emailField.value, product_id: preForm.dataset.productId })
+			}).then(function (res) {
+				return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+			}).then(function (result) {
+				if (result.ok) {
+					preForm.hidden = true;
+					var note = root.querySelector('[data-fr-prelaunch-note]');
+					if (note) note.hidden = false;
+				} else {
+					btn.disabled = false;
+					window.alert((result.data && result.data.message) || 'A apărut o eroare. Încearcă din nou.');
+				}
+			}).catch(function () {
+				btn.disabled = false;
+				window.alert('A apărut o eroare. Încearcă din nou.');
+			});
+		});
+	}
+
+	// Reveals (fade + rise).
+	var items = [].slice.call(root.querySelectorAll('.rev'));
 	if (!('IntersectionObserver' in window) || reduce) {
 		items.forEach(function (e) { e.classList.add('in'); });
 	} else {
@@ -31,6 +61,33 @@
 		}, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
 		items.forEach(function (e) { io.observe(e); });
 		setTimeout(function () { items.forEach(function (e) { e.classList.add('in'); }); }, 2200);
+	}
+
+	// Before/after poster reveal: auto-sweeps to show what it does, draggable manually,
+	// stops auto-sweeping for good the moment someone touches the slider.
+	var reveal = document.querySelector('.gp-reveal');
+	var revealRange = reveal && reveal.querySelector('.gp-reveal-range');
+	if (reveal && revealRange) {
+		var setPct = function (v) {
+			revealRange.value = v;
+			reveal.style.setProperty('--pct', v + '%');
+		};
+		var autoId = null;
+		var stopAuto = function () { if (autoId) { cancelAnimationFrame(autoId); autoId = null; } };
+		revealRange.addEventListener('input', function () {
+			reveal.style.setProperty('--pct', revealRange.value + '%');
+			stopAuto();
+		});
+		if (!reduce && 'requestAnimationFrame' in window) {
+			var start = null;
+			var tick = function (ts) {
+				if (!start) start = ts;
+				var t = (ts - start) / 1000;
+				setPct(Math.round(50 + 42 * Math.sin(t * 0.6)));
+				autoId = requestAnimationFrame(tick);
+			};
+			autoId = requestAnimationFrame(tick);
+		}
 	}
 
 	// Sticky mobile buy bar: appears after the hero, hides once the final CTA shows.

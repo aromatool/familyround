@@ -135,8 +135,8 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 	}, [data]);
 
 	const plotted = points.filter((p) => p.coords);
-	const totalGames = points.reduce((s, p) => s + p.count, 0);
 	const totalCities = points.length;
+	const totalGamesForCode = points.reduce((s, p) => s + p.count, 0);
 
 	// Dots appear once when the map enters view. Fails open: if armed and the observer
 	// never fires (e.g. a background tab), a timeout still reveals them.
@@ -196,6 +196,11 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 		return points.filter((p) => norm(p.locality).includes(q) || norm(p.county).includes(q));
 	}, [points, query]);
 
+	const [visibleCount, setVisibleCount] = useState(5);
+	useEffect(() => { setVisibleCount(5); }, [query]);
+	const visible = filtered.slice(0, visibleCount);
+	const hasMore = filtered.length > visibleCount;
+
 	const scale = cw ? cw / VB_W : 0;
 	let tip = null;
 	if (active && cw) {
@@ -224,6 +229,7 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 					plotted.map((p, i) => {
 						const isSel = selected === keyOf(p);
 						const r = Math.min(13, 7 + p.count);
+						const minHitR = scale ? 13 / scale : r + 12; // ~26px on-screen touch target, whatever the map's rendered size
 						return (
 							<g
 								key={keyOf(p)}
@@ -246,7 +252,7 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 									}
 								}}
 							>
-								<circle className="fr-map-hit" cx={p.coords[0]} cy={p.coords[1]} r={r + 12} />
+								<circle className="fr-map-hit" cx={p.coords[0]} cy={p.coords[1]} r={Math.max(r + 12, minHitR)} />
 								{isSel && <circle className="fr-map-ring" cx={p.coords[0]} cy={p.coords[1]} r={r + 6} />}
 								<circle className={`fr-map-dot${p.is_new ? ' fr-map-dot--new' : ''}`} cx={p.coords[0]} cy={p.coords[1]} r={r} />
 							</g>
@@ -268,12 +274,8 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 	const statsBlock = (
 		<div className="fr-map-stats">
 			<div className="fr-map-stat">
-				<span className="fr-map-stat-num">{totalGames}</span>
-				<span className="fr-map-stat-label">{totalGames === 1 ? 'joc cumpărat' : 'jocuri cumpărate'}{appliedCode ? ' prin acest cod' : ''}</span>
-			</div>
-			<div className="fr-map-stat">
 				<span className="fr-map-stat-num">{totalCities}</span>
-				<span className="fr-map-stat-label">{totalCities === 1 ? 'localitate' : 'localități'}</span>
+				<span className="fr-map-stat-label">{totalCities === 1 ? 'localitate, alături de noi' : 'localități, alături de noi'}</span>
 			</div>
 		</div>
 	);
@@ -285,7 +287,7 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 		: !data || loading
 			? 'Se încarcă harta…'
 			: plotted.length === 0
-				? appliedCode ? 'Încă nu există jocuri cumpărate prin acest cod.' : 'Povestea noastră abia începe.'
+				? appliedCode ? 'Încă nu există experiențe prin acest cod.' : 'Povestea noastră abia începe.'
 				: null;
 
 	// Homepage: two columns — copy (title, explanation, totals, link) left, map right.
@@ -307,8 +309,21 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 						) : (
 							<>
 								{statsBlock}
+								<form className="fr-map-code-mini" onSubmit={(event) => {
+									event.preventDefault();
+									const nextCode = codeInput.replace(/[^a-z0-9]/gi, '').toUpperCase();
+									if (nextCode) window.location.href = `${href || '/harta-familyround/'}?code=${encodeURIComponent(nextCode)}`;
+								}}>
+									<p className="fr-map-code-mini-kicker">Ai un cod FamilyRound?</p>
+									<p className="fr-map-code-mini-sub">Vezi unde au ajuns jocurile recomandate de tine.</p>
+									<div className="fr-map-code-mini-row">
+										<label className="fr-visually-hidden" htmlFor="fr-map-mini-code">Codul tău de recomandare</label>
+										<input id="fr-map-mini-code" type="text" autoComplete="off" maxLength="20" placeholder="Codul tău" value={codeInput} onChange={(event) => setCodeInput(event.target.value)} required />
+										<button type="submit">Vezi pe hartă <span aria-hidden="true">→</span></button>
+									</div>
+								</form>
 								{href && (
-									<a className="fr-cta-ghost" href={href}>Explorează harta →</a>
+									<a className="fr-cta-ghost" href={href}>Explorează întreaga hartă →</a>
 								)}
 							</>
 						)}
@@ -336,7 +351,16 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 					<button type="submit" disabled={loading}>Vezi pe hartă <span aria-hidden="true">→</span></button>
 				</form>
 				{filterError && <p className="fr-map-code-error" role="alert">{filterError}</p>}
-				{(appliedCode || requestedCode) && <p className="fr-map-code-active">{appliedCode && <>Privești jocurile cumpărate prin <strong>{appliedCode}</strong>. </>}<button type="button" onClick={() => { setCodeInput(''); setRequestedCode(''); }}>Vezi toate jocurile</button></p>}
+				{(appliedCode || requestedCode) && (
+					<p className="fr-map-code-active">
+						{appliedCode && (
+							totalGamesForCode > 0
+								? <>Felicitări! Datorită codului tău, {jocuri(totalGamesForCode)} au ajuns în {totalCities} {totalCities === 1 ? 'localitate' : 'localități'}. </>
+								: <>Privești jocurile cumpărate prin <strong>{appliedCode}</strong>. </>
+						)}
+						<button type="button" onClick={() => { setCodeInput(''); setRequestedCode(''); }}>Vezi toate jocurile</button>
+					</p>
+				)}
 			</div>
 			{mapStage}
 
@@ -362,7 +386,7 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 							<p className="fr-map-status">Nicio localitate nu se potrivește căutării.</p>
 						) : (
 							<ul>
-								{filtered.map((p) => (
+								{visible.map((p) => (
 									<li key={keyOf(p)}>
 										<button
 											type="button"
@@ -371,7 +395,8 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 											onClick={() => {
 												if (p.coords) {
 													setSelected(keyOf(p));
-													wrapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+													const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+													wrapRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
 												}
 											}}
 										>
@@ -383,6 +408,11 @@ export default function MapPoints({ compact = false, variant = 'default', title,
 									</li>
 								))}
 							</ul>
+						)}
+						{hasMore && (
+							<button type="button" className="fr-map-list-more" onClick={() => setVisibleCount((c) => c + 5)}>
+								Vezi mai multe localități <span aria-hidden="true">↓</span>
+							</button>
 						)}
 					</div>
 				</>

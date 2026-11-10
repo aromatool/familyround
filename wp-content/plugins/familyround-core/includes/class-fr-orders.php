@@ -11,6 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FR_Orders {
 	const SALE_AMOUNT  = 5.00;
 	const BONUS_AMOUNT = 5.00;
+	// "Confirmed" for piggybank/map/referral purposes. Includes Colete Online's
+	// own "Expediere inițiată" status: with AWB creation now manual, a merchant
+	// goes straight from On-hold to that status by clicking "Creează AWB" after
+	// confirming payment by phone — "processing"/"completed" alone would never
+	// fire for that flow, and the sale would never get counted.
+	const CONFIRMED_STATUSES = array( 'processing', 'completed', 'col-shipping-init' );
 
 	public static function init() {
 		add_action( 'woocommerce_payment_complete', array( __CLASS__, 'on_order_confirmed' ), 1 );
@@ -71,7 +77,7 @@ class FR_Orders {
 			10 === strlen( $normalized_phone ) && '0' === $normalized_phone[0] ? '0040' . substr( $normalized_phone, 1 ) : '',
 		) ) );
 		$base = array(
-			'status'  => array( 'processing', 'completed' ),
+			'status'  => self::CONFIRMED_STATUSES,
 			'limit'   => 1,
 			'return'  => 'ids',
 			'exclude' => $exclude_order_id ? array( (int) $exclude_order_id ) : array(),
@@ -101,7 +107,7 @@ class FR_Orders {
 
 	public static function on_order_confirmed( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->has_status( array( 'processing', 'completed' ) ) ) {
+		if ( ! $order || ! $order->has_status( self::CONFIRMED_STATUSES ) ) {
 			return;
 		}
 		self::ensure_order_item_snapshot( $order );
@@ -115,7 +121,7 @@ class FR_Orders {
 	}
 
 	public static function on_status_changed( $order_id, $old_status, $new_status ) {
-		$confirmed = array( 'processing', 'completed' );
+		$confirmed = self::CONFIRMED_STATUSES;
 		if ( in_array( $old_status, $confirmed, true ) && ! in_array( $new_status, $confirmed, true ) ) {
 			self::on_order_reversed( $order_id );
 		}
@@ -264,6 +270,11 @@ class FR_Orders {
 		$units    = null === $units ? self::eligible_units( $order ) : $units;
 		$locality = $order->get_shipping_city() ?: $order->get_billing_city();
 		$county   = $order->get_shipping_state() ?: $order->get_billing_state();
+		if ( ( ! $locality || ! $county ) && self::is_pickup_order( $order ) ) {
+			// Ridicarea nu colectează adresă — comanda apare pe hartă la sediul FamilyRound.
+			$locality = 'Florești';
+			$county   = 'CJ';
+		}
 		if ( ! $units || ! $locality || ! $county ) {
 			global $wpdb;
 			$wpdb->delete( $wpdb->prefix . 'fr_map_orders', array( 'order_id' => $order->get_id() ) );
@@ -312,5 +323,14 @@ class FR_Orders {
 		}
 		$wpdb->update( $wpdb->prefix . 'fr_referral_orders', array( 'status' => 'invalid', 'rejection_reason' => 'comandă neconfirmată', 'bonus_amount' => 0 ), array( 'order_id' => $order_id ) );
 		$wpdb->delete( $wpdb->prefix . 'fr_map_orders', array( 'order_id' => $order_id ) );
+	}
+
+	private static function is_pickup_order( $order ) {
+		foreach ( $order->get_shipping_methods() as $item ) {
+			if ( 0 === strpos( $item->get_method_id(), 'local_pickup' ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

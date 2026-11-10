@@ -12,6 +12,19 @@ class FR_REST {
 
 	public static function init() {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
+		add_filter( 'rest_post_dispatch', array( __CLASS__, 'prevent_caching' ), 10, 3 );
+	}
+
+	/**
+	 * These endpoints report live order/piggybank data. LiteSpeed's own REST
+	 * caching (and browsers obeying it) was serving a week-old empty response
+	 * long after a mission existed — override it explicitly on every request.
+	 */
+	public static function prevent_caching( $response, $server, $request ) {
+		if ( 0 === strpos( $request->get_route(), '/familyround/v1/' ) ) {
+			header( 'Cache-Control: no-store, no-cache, must-revalidate, max-age=0' );
+		}
+		return $response;
 	}
 
 	public static function register_routes() {
@@ -102,7 +115,7 @@ class FR_REST {
 		global $wpdb;
 
 		$mission = $wpdb->get_row(
-			"SELECT id, title, description, goal_amount FROM {$wpdb->prefix}fr_missions WHERE status = 'active' ORDER BY id DESC LIMIT 1"
+			"SELECT id, title, description, goal_amount, image_url FROM {$wpdb->prefix}fr_missions WHERE status = 'active' ORDER BY id DESC LIMIT 1"
 		);
 
 		$past_missions = $wpdb->get_results(
@@ -175,9 +188,9 @@ class FR_REST {
 				),
 				'allocated'     => (float) $allocated,
 				'donated'       => (float) $donated,
-				// Confirmed beneficiary. Null until a real cause is set, so the UI shows
-				// "Cauza urmează să fie anunțată." rather than inventing a beneficiary.
-				'cause'         => null,
+				// The active mission's title is the confirmed beneficiary — set only
+				// once an admin activates a real, named cause for that mission.
+				'cause'         => array( 'name' => $mission->title, 'note' => null, 'image' => $mission->image_url ?: null ),
 				'past_missions' => $past,
 			),
 			200

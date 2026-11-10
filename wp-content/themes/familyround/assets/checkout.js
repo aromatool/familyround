@@ -66,13 +66,45 @@
       .map(shippingMethodDetails).filter(Boolean);
     const locker = methods.filter((item) => item.type === 'locker').sort((a, b) => a.price - b.price);
     const courier = methods.filter((item) => item.type === 'courier').sort((a, b) => a.price - b.price);
-    const pickup = methods.filter((item) => item.type === 'pickup');
     const chosen = methods.find((item) => item.input.checked);
+
+    /**
+     * Pickup is a dedicated choice higher up the form (the "Cum primești
+     * comanda?" toggle) — nothing left to pick here, just confirm it.
+     */
+    if (currentShippingMode === 'pickup') {
+      list.classList.add('fr-shipping-simplified');
+      let note = list.parentElement.querySelector('.fr-shipping-pickup-note');
+      if (!note) {
+        note = document.createElement('p');
+        note.className = 'fr-shipping-pickup-note';
+        list.before(note);
+      }
+      note.textContent = 'Ridici coletul personal din Florești, Cluj. Te contactăm pentru detalii.';
+      list.parentElement?.querySelector('.fr-shipping-choices')?.remove();
+      list.parentElement?.querySelector('.fr-shipping-pending-note')?.remove();
+      return;
+    }
+    list.parentElement?.querySelector('.fr-shipping-pickup-note')?.remove();
+
+    /**
+     * Before a full address is typed, Colete has nothing to quote yet — the
+     * raw list would just show the pickup rate alone, which reads as if
+     * "Ridicare" is still selected even though the toggle says "Livrare".
+     */
     if (!courier.length && !locker.length) {
-      list.classList.remove('fr-shipping-simplified');
+      list.classList.add('fr-shipping-simplified');
+      let pending = list.parentElement.querySelector('.fr-shipping-pending-note');
+      if (!pending) {
+        pending = document.createElement('p');
+        pending.className = 'fr-shipping-pending-note';
+        list.before(pending);
+      }
+      pending.textContent = 'Taxele de livrare se calculează după ce introduci adresa completă.';
       list.parentElement?.querySelector('.fr-shipping-choices')?.remove();
       return;
     }
+    list.parentElement?.querySelector('.fr-shipping-pending-note')?.remove();
 
     let panel = list.parentElement.querySelector('.fr-shipping-choices');
     if (!panel) {
@@ -147,10 +179,123 @@
       });
       panel.append(choices);
     }
+  }
 
-    if (pickup.length) {
-      addChoice('pickup', 'Ridicare personală', 'Din Florești, Cluj', pickup,
-        () => chooseShippingMethod(pickup[0]));
+  let shippingModeToggleEl = null;
+  let currentShippingMode = 'delivery';
+  let lastReferralResult = null;
+
+  /**
+   * WC's own "chosen_shipping_methods" session value is unreliable as a
+   * pickup/delivery signal server-side: before a full address is entered,
+   * local_pickup can be the only available rate and gets auto-selected even
+   * though the toggle is on "Livrare" — that stale value made the cod gateway
+   * briefly read "Plată la ridicare" for a delivery order. This hidden field
+   * mirrors the toggle directly and rides along in WC's existing
+   * update_checkout post data, so the server can trust it instead.
+   */
+  function syncShippingModeField(mode) {
+    const form = document.querySelector('form.checkout');
+    if (!form) return;
+    let field = form.querySelector('#fr_shipping_mode');
+    if (!field) {
+      field = document.createElement('input');
+      field.type = 'hidden';
+      field.id = 'fr_shipping_mode';
+      field.name = 'fr_shipping_mode';
+      form.appendChild(field);
+    }
+    field.value = mode;
+  }
+
+  function availableShippingMethods() {
+    const list = document.querySelector('#order_review #shipping_method');
+    return list ? Array.from(list.querySelectorAll(':scope > li')).map(shippingMethodDetails).filter(Boolean) : [];
+  }
+
+  /**
+   * Hides the whole address block for pickup — it isn't needed, and WC's own
+   * required-field check is relaxed server-side too (see
+   * FR_Checkout::relax_address_fields_for_pickup) so a pickup order can submit
+   * with the fields empty, not just hidden.
+   */
+  function setShippingModeUI(mode) {
+    currentShippingMode = mode;
+    syncShippingModeField(mode);
+    if (shippingModeToggleEl) {
+      shippingModeToggleEl.querySelectorAll('button').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.shippingMode === mode));
+      });
+    }
+    const hide = mode === 'pickup';
+    DELIVERY_FIELD_IDS.map((id) => document.getElementById(id)).filter(Boolean).forEach((field) => {
+      field.hidden = hide;
+      field.querySelectorAll('input, select').forEach((control) => {
+        if (hide) {
+          if (control.required) control.dataset.frWasRequired = 'true';
+          control.required = false;
+        } else if (control.dataset.frWasRequired === 'true') {
+          control.required = true;
+          delete control.dataset.frWasRequired;
+        }
+      });
+    });
+    const description = document.querySelector('.fr-checkout-group-description');
+    if (description) description.hidden = hide;
+    const heading = document.querySelector('.fr-checkout-group-title[data-fr-group="delivery"]');
+    if (heading) heading.hidden = hide;
+  }
+
+  /**
+   * Keeps the real WC shipping radio in sync with the toggle. Delivery rates
+   * only exist once Colete has quoted a real address, so picking "Livrare"
+   * before that can't select anything yet — this re-runs on every
+   * updated_checkout and promotes off the stale pickup default the moment a
+   * courier/locker rate actually shows up.
+   */
+  function reconcileShippingMode() {
+    const methods = availableShippingMethods();
+    if (!methods.length) return;
+    const checked = methods.find((item) => item.input.checked);
+    if (currentShippingMode === 'pickup') {
+      const pickup = methods.find((item) => item.type === 'pickup');
+      if (pickup && checked !== pickup) chooseShippingMethod(pickup);
+      return;
+    }
+    if (checked && checked.type !== 'pickup') return;
+    const courier = methods.find((item) => item.type === 'courier' || item.type === 'locker');
+    if (courier) chooseShippingMethod(courier);
+  }
+
+  function buildShippingModeToggle() {
+    const toggle = document.createElement('div');
+    toggle.id = 'fr-shipping-mode-toggle';
+    toggle.className = 'fr-invoice-switch fr-shipping-mode-switch';
+    toggle.setAttribute('role', 'group');
+    toggle.setAttribute('aria-label', 'Cum primești comanda');
+    [['delivery', 'Livrare'], ['pickup', 'Ridicare']].forEach(([mode, label]) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.dataset.shippingMode = mode;
+      button.setAttribute('aria-pressed', String(mode === currentShippingMode));
+      button.addEventListener('click', () => {
+        if (currentShippingMode === mode) return;
+        setShippingModeUI(mode);
+        reconcileShippingMode();
+        if (window.jQuery) window.jQuery(document.body).trigger('update_checkout');
+      });
+      toggle.appendChild(button);
+    });
+    return toggle;
+  }
+
+  function initShippingModeToggle() {
+    const wrapper = document.querySelector('.fr-purchase--checkout .woocommerce-billing-fields__field-wrapper');
+    if (!wrapper) return;
+    setShippingModeUI('delivery');
+    if (window.jQuery) {
+      window.jQuery(document.body).on('updated_checkout', () => window.setTimeout(reconcileShippingMode, 0));
     }
   }
 
@@ -231,16 +376,27 @@
     update();
   }
 
+  const DELIVERY_FIELD_IDS = ['billing_country_field', 'billing_city_state_field', 'billing_locality_field', 'billing_state_field', 'billing_city_field', 'billing_postcode_field', 'billing_street_field', 'billing_street_number_field', 'billing_address_1_field', 'billing_address_2_field'];
+
   function arrangeBillingFields() {
     const wrapper = document.querySelector('.fr-purchase--checkout .woocommerce-billing-fields__field-wrapper');
     if (!wrapper) return;
     const groups = [
       ['invoice', 'Cui facem factura?', ['smartbill_billing_type_field', 'billing_company_field', 'smartbill_billing_company_name_field', 'smartbill_billing_cif_field', 'smartbill_billing_nr_reg_com_field']],
-      ['contact', 'Date de contact', ['billing_first_name_field', 'billing_last_name_field', 'billing_email_field', 'billing_phone_field']],
-      ['delivery', 'Adresa ta', ['billing_country_field', 'billing_city_state_field', 'billing_locality_field', 'billing_state_field', 'billing_city_field', 'billing_postcode_field', 'billing_street_field', 'billing_street_number_field', 'billing_address_1_field', 'billing_address_2_field']]
+      ['contact', 'Date de contact', ['billing_last_name_field', 'billing_first_name_field', 'billing_email_field', 'billing_phone_field']],
+      ['shipping_mode', 'Cum primești comanda?', []],
+      ['delivery', 'Adresa ta', DELIVERY_FIELD_IDS]
     ];
     const desired = [];
     groups.forEach(([key, title, ids]) => {
+      // Un grup cu o listă de câmpuri declarată, dar fără niciunul prezent în
+      // DOM (ex. "Cui facem factura?" când secțiunea de firmă e ascunsă),
+      // rămâne doar un titlu gol — îl omitem complet.
+      if (ids.length && !ids.some((id) => document.getElementById(id))) {
+        const staleHeading = wrapper.querySelector(`.fr-checkout-group-title[data-fr-group="${key}"]`);
+        if (staleHeading) staleHeading.remove();
+        return;
+      }
       let heading = wrapper.querySelector(`.fr-checkout-group-title[data-fr-group="${key}"]`);
       if (!heading) {
         heading = document.createElement('h4');
@@ -249,6 +405,10 @@
         heading.textContent = title;
       }
       desired.push(heading);
+      if (key === 'shipping_mode') {
+        if (!shippingModeToggleEl) shippingModeToggleEl = buildShippingModeToggle();
+        desired.push(shippingModeToggleEl);
+      }
       if (key === 'delivery') {
         let description = wrapper.querySelector('.fr-checkout-group-description');
         if (!description) {
@@ -310,7 +470,7 @@
       billing_street: 'Alege strada',
       billing_street_number: 'Număr',
       billing_address_2: 'Bloc, scară, apartament (opțional)',
-      order_comments: 'De exemplu: Cu drag, Mihai'
+      order_comments: 'O observație sau un mesaj pentru noi, dacă vrei să lași unul'
     };
     Object.entries(placeholders).forEach(([id, text]) => {
       const input = document.getElementById(id);
@@ -324,18 +484,38 @@
 
   function initReferralValidation() {
     const input = document.getElementById('fr_referral_code');
-    const field = document.getElementById('fr_referral_code_field');
+    const field = document.getElementById('fr-referral-field');
     if (!input || !field || !window.frCheckout) return;
 
-    const status = document.createElement('p');
-    status.id = 'fr-referral-status';
-    status.className = 'fr-referral-status';
-    status.setAttribute('role', 'status');
-    status.setAttribute('aria-live', 'polite');
-    field.appendChild(status);
-    input.setAttribute('aria-describedby', [input.getAttribute('aria-describedby'), status.id].filter(Boolean).join(' '));
+    let status = field.querySelector('#fr-referral-status');
+    if (!status) {
+      status = document.createElement('p');
+      status.id = 'fr-referral-status';
+      status.className = 'fr-referral-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      field.appendChild(status);
+      input.setAttribute('aria-describedby', [input.getAttribute('aria-describedby'), status.id].filter(Boolean).join(' '));
+    }
 
-    let timer;
+    /**
+     * initReferralValidation() re-runs on every updated_checkout, but the
+     * input/button nodes don't always get replaced by the fragment update —
+     * rebinding listeners on the same persisted node doubled every click and
+     * every status message. Bind once per real element, keyed on the node
+     * itself; a genuinely fresh node (if the fragment did replace it) won't
+     * carry the flag and rebinds normally.
+     */
+    if (input.dataset.frReferralBound) {
+      const normalized = input.value.replace(/[^a-z0-9]/gi, '').toUpperCase();
+      if (normalized && lastReferralResult && lastReferralResult.code === normalized) {
+        status.textContent = lastReferralResult.message;
+        status.dataset.state = lastReferralResult.state;
+      }
+      return;
+    }
+    input.dataset.frReferralBound = '1';
+
     let request;
     let serial = 0;
 
@@ -346,17 +526,27 @@
       else input.removeAttribute('aria-invalid');
     }
 
+    /**
+     * verify() ends by triggering update_checkout to refresh the total, which
+     * re-renders this whole block (it lives in the order-review fragment) and
+     * re-runs initReferralValidation() — remembering the last checked code
+     * (module-scope, survives the re-render) stops that from re-verifying and
+     * re-triggering update_checkout forever.
+     */
     async function verify() {
       const code = input.value.replace(/[^a-z0-9]/gi, '').toUpperCase();
       const current = ++serial;
       if (request) request.abort();
       if (!code) {
         show('', 'idle');
+        lastReferralResult = { code: '', message: '', state: 'idle' };
         if (window.jQuery) window.jQuery(document.body).trigger('update_checkout');
         return;
       }
       if (code.length > 20) {
-        show('Codul este prea lung. Verifică-l și încearcă din nou.', 'invalid');
+        const message = 'Codul este prea lung. Verifică-l și încearcă din nou.';
+        show(message, 'invalid');
+        lastReferralResult = { code, message, state: 'invalid' };
         if (window.jQuery) window.jQuery(document.body).trigger('update_checkout');
         return;
       }
@@ -366,7 +556,9 @@
       const body = new URLSearchParams({
         action: 'fr_check_referral_code',
         nonce: window.frCheckout.referralNonce,
-        code
+        code,
+        email: document.getElementById('billing_email')?.value || '',
+        phone: document.getElementById('billing_phone')?.value || ''
       });
       try {
         const response = await fetch(window.frCheckout.ajaxUrl, {
@@ -379,12 +571,27 @@
         const result = await response.json();
         if (current !== serial) return;
         if (!response.ok || !result.success) throw new Error('Referral check failed');
-        show(
-          result.data.valid
-            ? 'Cod găsit. Bonusul de 5 lei per joc este pentru prima ta comandă.'
-            : 'Codul nu a fost găsit. Verifică-l înainte de a plasa comanda.',
-          result.data.valid ? 'valid' : 'invalid'
-        );
+        const data = result.data;
+        let message;
+        let state;
+        if (!data.valid) {
+          message = 'Codul nu a fost găsit. Verifică-l înainte de a plasa comanda.';
+          state = 'invalid';
+        } else if (data.bonus_eligible) {
+          message = 'Felicitări! Codul e valid — 5 lei extra merg în Pușculiță din această comandă.';
+          state = 'valid';
+        } else if (data.self_referral) {
+          message = 'Acesta e codul tău propriu. Bonusul se acordă altor familii, la prima lor comandă — pentru jocurile tale tot punem 5 lei per joc în Pușculiță.';
+          state = 'invalid';
+        } else if (data.repeat_buyer) {
+          message = 'Ai mai folosit acest cod la o comandă anterioară — bonusul e valabil doar pentru prima comandă. Punem oricum 5 lei per joc în Pușculiță.';
+          state = 'invalid';
+        } else {
+          message = 'Cod valid. Completează email și telefon ca să confirmăm bonusul de 5 lei per joc.';
+          state = 'valid';
+        }
+        show(message, state);
+        lastReferralResult = { code, message, state };
         if (window.jQuery) window.jQuery(document.body).trigger('update_checkout');
       } catch (error) {
         if (error.name !== 'AbortError' && current === serial) {
@@ -393,17 +600,21 @@
       }
     }
 
+    /**
+     * Only the "Aplică" button checks the code — no live/auto verification
+     * while typing, so a half-typed code never fires a request or an update.
+     */
+    const applyButton = document.getElementById('fr_referral_apply');
+    if (applyButton) {
+      applyButton.addEventListener('click', verify);
+    }
     input.addEventListener('input', () => {
-      clearTimeout(timer);
-      if (request) request.abort();
-      show('', 'idle');
-      timer = setTimeout(verify, 450);
+      if (status.dataset.state && status.dataset.state !== 'idle') show('', 'idle');
     });
-    input.addEventListener('blur', () => {
-      clearTimeout(timer);
-      verify();
-    });
-    if (input.value.trim()) verify();
+    const normalized = input.value.replace(/[^a-z0-9]/gi, '').toUpperCase();
+    if (normalized && lastReferralResult && lastReferralResult.code === normalized) {
+      show(lastReferralResult.message, lastReferralResult.state);
+    }
   }
 
   function initReferralPreview() {
@@ -529,12 +740,90 @@
         status.textContent = notice.textContent.trim();
         status.classList.add('fr-checkout-feedback--error');
         status.hidden = false;
+        const group = document.querySelector('.woocommerce-NoticeGroup-checkout');
+        if (group) group.style.display = 'none';
       }, 0);
     });
   }
 
+  /**
+   * Pickup only ever pays cash on delivery — a one-option radio list reads as
+   * a pointless choice. Swap it for a plain line once cod is the only
+   * gateway on screen (restrict_payment_by_shipping already guarantees that
+   * only happens for pickup); the real cod radio stays in the DOM, just
+   * visually hidden, so it keeps submitting correctly.
+   */
+  /**
+   * Cash only makes sense for local pickup, card (NETOPIA) only for courier
+   * delivery — no bank transfer in the real setup. Stays purely visual (see
+   * class-fr-checkout.php for why a server-side gateway filter broke real
+   * shipping quotes). Reads whichever shipping radio is actually checked
+   * right now, so it never forces a default before the customer has chosen
+   * anything.
+   */
+  function initPickupPaymentMessage() {
+    const render = () => {
+      const list = document.querySelector('#payment .payment_methods');
+      if (!list) return;
+      /**
+       * Driven by the "Cum primești comanda?" toggle, not the raw checked
+       * radio — before an address is typed, pickup is the only rate WC has
+       * to show regardless of what the toggle says "Livrare" is selected,
+       * reading the radio here would flash "Plătești cash la ridicare" under
+       * a toggle that still says "Livrare".
+       *
+       * "Sole mode" covers pickup only — cash at pickup is the only option
+       * there, so the radio is hidden entirely (kept checked, so it still
+       * submits) and a plain sentence takes its place. Delivery now has a
+       * real choice (Ramburs / Transfer bancar), so both stay visible and
+       * selectable — no forced sole method there anymore.
+       */
+      const isPickup = currentShippingMode === 'pickup';
+      const soleMethod = isPickup ? 'cod' : null;
+      let note = list.parentElement.querySelector('.fr-payment-pickup-note');
+
+      // Pickup: hide the whole list, a sentence takes its place. Delivery:
+      // both Ramburs (cod) and Transfer bancar (bacs) stay visible and
+      // selectable — nothing else is ever enabled alongside them (card
+      // arrives, and this whole function stops mattering, once Netopia is
+      // configured for real).
+      list.querySelectorAll('.wc_payment_method').forEach((li) => {
+        li.hidden = !!soleMethod;
+      });
+
+      if (soleMethod) {
+        const radio = list.querySelector(`.payment_method_${soleMethod} input[type="radio"]`);
+        if (radio && !radio.checked) radio.checked = true;
+      } else {
+        const visible = Array.from(list.querySelectorAll('.wc_payment_method')).filter((li) => !li.hidden);
+        const alreadyChecked = visible.some((li) => li.querySelector('input[type="radio"]')?.checked);
+        if (!alreadyChecked && visible[0]) {
+          const radio = visible[0].querySelector('input[type="radio"]');
+          if (radio) radio.checked = true;
+        }
+      }
+
+      if (soleMethod) {
+        if (!note) {
+          note = document.createElement('p');
+          note.className = 'fr-payment-pickup-note';
+          list.insertAdjacentElement('afterend', note);
+        }
+        note.textContent = 'Plătești cash la ridicare.';
+      } else if (note) {
+        note.remove();
+      }
+    };
+    render();
+    if (window.jQuery) {
+      window.jQuery(document.body).on('updated_checkout', () => window.setTimeout(render, 0));
+      window.jQuery(document.body).on('change', '#shipping_method input', () => window.setTimeout(render, 0));
+    }
+  }
+
   function init() {
     initBillingLayout();
+    initShippingModeToggle();
     initInvoiceType();
     localizeCheckoutLabels();
     initReferralValidation();
@@ -542,7 +831,8 @@
     initShippingLabels();
     initCheckoutQuantity();
     initCheckoutErrors();
-    if (window.jQuery) window.jQuery(document.body).on('updated_checkout', localizeCheckoutLabels);
+    initPickupPaymentMessage();
+    if (window.jQuery) window.jQuery(document.body).on('updated_checkout', () => { localizeCheckoutLabels(); initReferralValidation(); });
   }
 
   if (document.readyState === 'loading') {

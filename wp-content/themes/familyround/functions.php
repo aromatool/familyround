@@ -4,7 +4,44 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_THEME_VERSION', '1.52.1' );
+define( 'FR_THEME_VERSION', '1.59.29' );
+
+// Site is live, but real checkout stays off until the business has a CUI and
+// NETOPIA/SmartBill/Colete Online are configured with real credentials.
+// Flip to false once that's done — every "Comandă acum" link reverts to the
+// real add-to-cart flow on its own, no other changes needed.
+// TEMPORARILY false for local testing (shipping/AWB flow) — put back to true
+// before this reaches anywhere real customers can open it. Real checkout means
+// real orders, and real orders need a CUI to invoice, testing-mode Colete
+// Online or not.
+define( 'FR_PRELAUNCH', false );
+
+function fr_is_prelaunch() {
+	return defined( 'FR_PRELAUNCH' ) && FR_PRELAUNCH;
+}
+
+// Real checkout (cart, address, courier quote) stays on, but with no card
+// at checkout at all — "Transfer bancar" is relabeled to "te contactăm pentru
+// plată și factură" and is the only payment option for delivery orders. No
+// money moves through the site; the order lands on-hold and FamilyRound
+// follows up by phone/email to actually collect payment once there's a CUI
+// to invoice against. Flip to false once NETOPIA + SmartBill are live — the
+// real card gateway and the real bank-transfer copy come back on their own.
+define( 'FR_PAYMENT_AWAITING_CUI', true );
+
+function fr_payment_awaiting_cui() {
+	return defined( 'FR_PAYMENT_AWAITING_CUI' ) && FR_PAYMENT_AWAITING_CUI;
+}
+
+// Defense in depth: block add-to-cart at the source too, in case someone
+// reaches a stale/bookmarked ?add-to-cart= link while prelaunch is active.
+add_filter( 'woocommerce_add_to_cart_validation', function ( $passed ) {
+	if ( fr_is_prelaunch() ) {
+		wc_add_notice( 'Comenzile pornesc în curând. Lasă-ți emailul pe pagina jocului și te anunțăm.', 'error' );
+		return false;
+	}
+	return $passed;
+} );
 
 function fr_challenge_cards() {
 	return array(
@@ -120,13 +157,51 @@ add_filter( 'woocommerce_product_single_add_to_cart_text', function () {
 	return 'Comandă acum';
 } );
 
-// Skip the optional cart page; WooCommerce still keeps the cart and its editor.
+// Skip the cart page entirely — redirect both "add to cart" and direct /cart/ visits to checkout.
 add_filter( 'woocommerce_add_to_cart_redirect', function ( $url ) {
 	return function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : $url;
 }, 20 );
 
+add_action( 'template_redirect', function () {
+	if ( function_exists( 'is_cart' ) && is_cart() && ! empty( WC()->cart->get_cart() ) ) {
+		wp_safe_redirect( wc_get_checkout_url() );
+		exit;
+	}
+} );
+
+/**
+ * A wa.me link tapped straight from inside an app's own in-app browser (Gmail's
+ * being the one reported) doesn't always hand off to the native WhatsApp app —
+ * it can fall back to the web client instead. Routing through a same-origin
+ * redirect first forces a real page navigation, which the OS intercepts more
+ * reliably than a link click handled entirely inside that embedded webview.
+ */
+add_action( 'template_redirect', function () {
+	if ( ! isset( $_GET['fr_wa_redirect'] ) ) {
+		return;
+	}
+	$text = isset( $_GET['text'] ) ? sanitize_textarea_field( wp_unslash( $_GET['text'] ) ) : '';
+	wp_redirect( 'https://wa.me/?text=' . rawurlencode( $text ), 302 );
+	exit;
+}, 1 );
+
+function fr_whatsapp_link( $text ) {
+	return add_query_arg( array( 'fr_wa_redirect' => 1, 'text' => rawurlencode( $text ) ), home_url( '/' ) );
+}
+
 add_filter( 'wc_add_to_cart_message_html', function ( $message ) {
 	return esc_html__( 'Jocul a fost adăugat. Verifică datele și totalul înainte de a plasa comanda.', 'familyround' );
+} );
+
+// WordPress's default sender ("wordpress@" + site host) is "wordpress@localhost" on this
+// local setup — not a valid address, so PHPMailer rejects every email before it's even
+// sent. A real transactional sender still needs configuring before launch (see PRODUCT.md),
+// but a syntactically valid address is required for mail to go out at all, local or live.
+add_filter( 'wp_mail_from', function ( $email ) {
+	return false !== strpos( $email, '@localhost' ) ? 'no-reply@familyround.ro' : $email;
+} );
+add_filter( 'wp_mail_from_name', function () {
+	return 'FamilyRound';
 } );
 
 // Colete Online owns address entry and shipping quotes at checkout. The cart
@@ -164,7 +239,7 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 		return $translation;
 	}
 	$labels = array(
-		'Product'                      => 'Joc',
+		'Product'                      => 'Produs',
 		'Price'                        => 'Preț',
 		'Quantity'                     => 'Cantitate',
 		'Subtotal'                     => 'Subtotal',
@@ -179,11 +254,11 @@ add_filter( 'gettext', function ( $translation, $text, $domain ) {
 		'Update cart'                  => 'Actualizează coșul',
 		'Your order'                   => 'Sumarul comenzii',
 		'Billing details'              => 'Detaliile comenzii',
-		'Billing address'              => 'Detaliile comenzii',
+		'Billing address'              => 'Adresa de livrare',
 		'Billing &amp; Shipping'       => 'Detaliile comenzii',
 		'Ship to a different address?' => 'Trimite jocul la o adresă diferită de cea completată mai sus',
 		'Order notes'                  => 'Mesaj pentru colet',
-		'Additional information'       => 'Vrei să adaugi un mesaj în colet?',
+		'Additional information'       => 'Mai vrei să ne spui ceva?',
 		'Have a coupon?'               => 'Ai un cupon?',
 		'Click here to enter your code' => 'Introdu codul aici',
 		'Place order'                  => 'Plasează comanda',
@@ -202,7 +277,7 @@ add_filter( 'woocommerce_get_privacy_policy_text', function ( $text, $type ) {
 add_filter( 'woocommerce_cart_item_thumbnail', function ( $thumbnail, $cart_item ) {
 	$product = $cart_item['data'] ?? null;
 	if ( $product && false !== stripos( $product->get_name(), '30 de provocări' ) ) {
-		return '<img src="' . esc_url( get_theme_file_uri( 'assets/images/unbox/cutie_inchisa.png' ) ) . '" width="80" height="80" alt="Cutia 30 de provocări în familie">';
+		return '<img src="' . esc_url( get_theme_file_uri( 'assets/images/product/complete_product.webp' ) ) . '" width="80" height="80" alt="Cutia 30 de provocări în familie">';
 	}
 	return $thumbnail;
 }, 10, 2 );
@@ -215,24 +290,42 @@ add_filter( 'woocommerce_cart_item_name', function ( $name, $cart_item ) {
 	if ( $product && function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() ) {
 		$image = $product->get_image( 'woocommerce_thumbnail' );
 		if ( false !== stripos( $product->get_name(), '30 de provocări' ) ) {
-			$image = '<img src="' . esc_url( get_theme_file_uri( 'assets/images/unbox/cutie_inchisa.png' ) ) . '" alt="" width="64" height="64">';
+			$image = '<img src="' . esc_url( get_theme_file_uri( 'assets/images/product/complete_product.webp' ) ) . '" alt="" width="64" height="64">';
 		}
 		return '<span class="fr-checkout-line-image">' . $image . '</span><span class="fr-checkout-line-name">' . $name . '</span>';
 	}
 	return $name;
 }, 10, 2 );
 
+// Google Analytics 4 — skipped for admins so our own testing never pollutes real traffic data.
+add_action( 'wp_head', function () {
+	if ( current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-GXSS0XGV57"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'G-GXSS0XGV57');
+	</script>
+	<?php
+}, 1 );
+
 // Share previews for the FamilyRound brand home and individual experiences.
 add_action( 'wp_head', function () {
 	if ( is_front_page() ) {
 		$has_referral = isset( $_GET['ref'] ) && is_string( $_GET['ref'] ) && '' !== preg_replace( '/[^A-Za-z0-9]/', '', wp_unslash( $_GET['ref'] ) );
 		$title = $has_referral
-			? 'Dă timpul mai departe cu FamilyRound'
-			: 'FamilyRound — Din timpul împreună se nasc poveștile voastre';
+			? 'Dă bucuria mai departe cu FamilyRound!'
+			: 'FamilyRound — 30 de provocări pentru mai mult timp în familie';
 		$description = $has_referral
-			? 'Descoperă experiențe care aduc familiile mai aproape. La prima ta comandă prin acest link, FamilyRound mai pune 5 lei pentru fiecare joc eligibil în Pușculiță, fără cost în plus.'
-			: 'FamilyRound creează jocuri și experiențe care aduc familiile mai aproape. Descoperă prima experiență, Pușculița și poveștile care merg mai departe.';
-		$image = get_theme_file_uri( 'assets/images/hero-family-moment.jpg' );
+			? 'Descoperă 30 de provocări în familie! Pentru fiecare joc cumpărat prin acest link, 10 lei ajung în Pușculița FamilyRound, fără niciun cost suplimentar pentru tine.'
+			: 'FamilyRound creează jocuri și experiențe pentru familii cu copii, gândite să vă aducă mai aproape. Descoperă prima experiență, Pușculița și poveștile care merg mai departe.';
+		$image = $has_referral
+			? get_theme_file_uri( 'assets/images/pusculita-recomandare-10lei.jpg' )
+			: get_theme_file_uri( 'assets/images/product/complete_product.png' );
 		echo '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
 		echo '<meta property="og:type" content="website">' . "\n";
 		echo '<meta property="og:locale" content="ro_RO">' . "\n";
@@ -243,6 +336,48 @@ add_action( 'wp_head', function () {
 		echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
 		return;
 	}
+	// A handful of standalone pages had no description/OG tags at all — each
+	// gets its own real copy (taken from or matching what's already on the
+	// page), not a generic fallback.
+	$page_meta = array(
+		'pusculita-familyround'  => array(
+			'title' => 'Un joc pentru familia ta. Bucurie pentru alte familii.',
+			'desc' => 'Din fiecare joc FamilyRound cumpărat, punem 5 lei în Pușculiță. Descoperă cum ducem bucuria mai departe.',
+			'img'  => 'assets/images/pusculita-share.jpg',
+		),
+		'harta-familyround'      => array(
+			'title' => 'Harta FamilyRound. Dintr-o familie, în tot mai multe case.',
+			'desc' => 'Fiecare joc FamilyRound cumpărat adaugă un nou loc pe harta noastră. Descoperă orașele în care au ajuns provocările și urmărește cum crește povestea FamilyRound.',
+			'img'  => 'assets/images/harta-share.jpg',
+		),
+		'povestea-noastra'       => array(
+			'title' => 'Povestea FamilyRound',
+			'desc' => 'Descoperă povestea FamilyRound, un brand creat de Alexandru și Alexandra, părinții a trei copii, din dorința de a aduce mai mult timp, bucurie și amintiri în familie.',
+			'img'  => 'assets/images/story-family.jpg',
+		),
+		'da-timpul-mai-departe'  => array(
+			'title' => 'Recomandă FamilyRound. Dă bucuria mai departe!',
+			'desc' => 'Creează gratuit propriul link FamilyRound și distribuie-l mai departe. Pentru fiecare joc cumpărat prin linkul tău, 10 lei ajung în Pușculița FamilyRound. Nu trebuie să cumperi un joc ca să participi!',
+			'img'  => 'assets/images/da-timpul-mai-departe-share.jpg',
+		),
+	);
+	foreach ( $page_meta as $slug => $meta ) {
+		if ( ! is_page( $slug ) ) {
+			continue;
+		}
+		$title = $meta['title'];
+		$img   = get_theme_file_uri( $meta['img'] );
+		echo '<meta name="description" content="' . esc_attr( $meta['desc'] ) . '">' . "\n";
+		echo '<meta property="og:type" content="website">' . "\n";
+		echo '<meta property="og:locale" content="ro_RO">' . "\n";
+		echo '<meta property="og:site_name" content="FamilyRound">' . "\n";
+		echo '<meta property="og:title" content="' . esc_attr( $title ) . '">' . "\n";
+		echo '<meta property="og:description" content="' . esc_attr( $meta['desc'] ) . '">' . "\n";
+		echo '<meta property="og:image" content="' . esc_url( $img ) . '">' . "\n";
+		echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+		return;
+	}
+
 	if ( ! function_exists( 'is_product' ) || ! is_product() ) {
 		return;
 	}
@@ -251,11 +386,11 @@ add_action( 'wp_head', function () {
 	$is_first_experience = false !== stripos( $title, '30 de provocări' );
 	$product = function_exists( 'wc_get_product' ) ? wc_get_product( $pid ) : null;
 	$desc  = $is_first_experience
-		? '30 de idei pentru timp petrecut împreună. Alegeți un cartonaș, faceți provocarea și păstrați amintirile pe posterul FamilyRound.'
+		? '30 de idei pentru timp petrecut împreună, pentru familii cu copii. Alegeți un cartonaș, faceți provocarea și păstrați amintirile pe posterul FamilyRound.'
 		: ( $product ? wp_strip_all_tags( $product->get_short_description() ) : '' );
 	$desc = $desc ? $desc : 'O experiență FamilyRound pentru timpul petrecut împreună.';
 	$img = $is_first_experience
-		? get_theme_file_uri( 'assets/images/unbox/cutie_inchisa.png' )
+		? get_theme_file_uri( 'assets/images/product/complete_product.png' )
 		: ( $product && $product->get_image_id() ? wp_get_attachment_image_url( $product->get_image_id(), 'large' ) : get_theme_file_uri( 'assets/images/logo-icon.png' ) );
 	echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
 	echo '<meta property="og:type" content="product">' . "\n";
@@ -263,6 +398,12 @@ add_action( 'wp_head', function () {
 	echo '<meta property="og:description" content="' . esc_attr( $desc ) . '">' . "\n";
 	echo '<meta property="og:image" content="' . esc_url( $img ) . '">' . "\n";
 }, 5 );
+
+// WordPress's default author/user sitemap exposes "/author/admin/" — pure SEO
+// noise for a store with no author archives, and it leaks the admin username.
+add_filter( 'wp_sitemaps_add_provider', function ( $provider, $name ) {
+	return 'users' === $name ? false : $provider;
+}, 10, 2 );
 
 add_filter( 'wp_resource_hints', function ( $urls, $relation_type ) {
 	if ( 'preconnect' === $relation_type ) {
@@ -285,9 +426,10 @@ add_action( 'wp_enqueue_scripts', function () {
 	if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() ) {
 		wp_enqueue_script( 'familyround-checkout', get_theme_file_uri( 'assets/checkout.js' ), array( 'jquery' ), FR_THEME_VERSION, true );
 		wp_localize_script( 'familyround-checkout', 'frCheckout', array(
-			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-			'referralNonce' => wp_create_nonce( 'fr_referral_check' ),
-			'quantityNonce' => wp_create_nonce( 'fr_checkout_quantity' ),
+			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
+			'referralNonce'      => wp_create_nonce( 'fr_referral_check' ),
+			'quantityNonce'      => wp_create_nonce( 'fr_checkout_quantity' ),
+			'paymentAwaitingCui' => fr_payment_awaiting_cui(),
 		) );
 	}
 
@@ -314,3 +456,8 @@ add_action( 'wp_enqueue_scripts', function () {
 		wp_enqueue_style( 'familyround-islands', get_theme_file_uri( 'assets/dist/main.css' ), array(), FR_THEME_VERSION );
 	}
 } );
+
+// Nu arătăm clienților câte bucăți mai avem pe stoc, doar dacă e disponibil.
+add_filter( 'woocommerce_get_availability_text', function ( $text, $product ) {
+	return $product->is_in_stock() ? __( 'În stoc', 'familyround' ) : __( 'Stoc epuizat', 'familyround' );
+}, 10, 2 );

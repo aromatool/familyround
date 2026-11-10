@@ -16,6 +16,45 @@ if ( false === stripos( $fr_product_title, '30 de provocări' ) ) {
 $u     = get_theme_file_uri( 'assets/images/' );
 $unbox = $u . 'unbox/';
 
+$fr_sample_cards = array(
+	array(
+		'src'   => $u . 'card-01.jpg',
+		'alt'   => 'Familie la drumeție pe un traseu de munte',
+		'num'   => '01',
+		'title' => 'Drumeție în familie',
+	),
+	array(
+		'src'   => $u . 'card-15.jpg',
+		'alt'   => 'Familie privind peisajul pe geamul unui tren',
+		'num'   => '15',
+		'title' => 'O excursie cu trenul',
+	),
+	array(
+		'src'   => $u . 'card-17.jpg',
+		'alt'   => 'Tată și copii construind un vehicul din materiale reciclate',
+		'num'   => '17',
+		'title' => 'Construim un vehicul',
+	),
+	array(
+		'src'   => $u . 'card-25.jpg',
+		'alt'   => 'Familie gătind și servind masa împreună, ca la restaurant',
+		'num'   => '25',
+		'title' => 'Restaurant familie',
+	),
+	array(
+		'src'   => $u . 'card-02.jpg',
+		'alt'   => 'Familie la picnic lângă un lac',
+		'num'   => '02',
+		'title' => 'Picnic în familie',
+	),
+	array(
+		'src'   => $u . 'card-29.jpg',
+		'alt'   => 'Familie cântând karaoke în sufragerie',
+		'num'   => '29',
+		'title' => 'Karaoke',
+	),
+);
+
 while ( have_posts() ) :
 	the_post();
 	global $product;
@@ -23,7 +62,7 @@ while ( have_posts() ) :
 		$product = wc_get_product( get_the_ID() );
 	}
 	$price_html = $product ? $product->get_price_html() : '';
-	$cart_url   = $product ? $product->add_to_cart_url() : '#fr-product-order';
+	$cart_url   = ( fr_is_prelaunch() || ! $product ) ? '#fr-product-order' : $product->add_to_cart_url();
 	?>
 
 <div class="fr-gamepage">
@@ -34,17 +73,27 @@ while ( have_posts() ) :
 			<div class="gp-hero-copy">
 				<p class="gp-eyebrow rev">FamilyRound · 30 de provocări în familie</p>
 				<h1 class="rev">30 de idei.<br>O mulțime de amintiri.</h1>
-				<p class="gp-lead rev">Alegeți un cartonaș, faceți ceva împreună și păstrați momentul pe posterul vostru. Unele experiențe încep acasă. Altele vă duc într-o mică aventură.</p>
+				<p class="gp-lead rev">Alegeți un cartonaș, faceți ceva împreună cu copiii și păstrați momentul pe posterul vostru. Unele experiențe încep acasă. Altele vă duc într-o mică aventură.</p>
 				<div class="gp-hero-buy rev" id="fr-product-order">
-					<?php woocommerce_template_single_add_to_cart(); ?>
-					<?php if ( $price_html ) : ?><span class="gp-hero-price"><?php echo wp_kses_post( $price_html ); ?></span><?php endif; ?>
+					<?php if ( fr_is_prelaunch() ) : ?>
+						<form class="fr-prelaunch-form" data-fr-prelaunch-form data-product-id="<?php echo esc_attr( $product ? $product->get_id() : 0 ); ?>" data-endpoint="<?php echo esc_url( rest_url( 'familyround/v1/prelaunch-lead' ) ); ?>">
+							<label class="fr-visually-hidden" for="fr-prelaunch-email">Adresa ta de email</label>
+							<input type="email" id="fr-prelaunch-email" name="email" placeholder="Adresa ta de email" required>
+							<button type="submit">Anunță-mă când pot comanda</button>
+						</form>
+						<p class="fr-prelaunch-note" data-fr-prelaunch-note hidden>Mulțumim! Te anunțăm imediat ce poți comanda.</p>
+						<?php if ( $price_html ) : ?><span class="gp-hero-price"><?php echo wp_kses_post( $price_html ); ?></span><?php endif; ?>
+					<?php else : ?>
+						<?php woocommerce_template_single_add_to_cart(); ?>
+						<?php if ( $price_html ) : ?><span class="gp-hero-price"><?php echo wp_kses_post( $price_html ); ?></span><?php endif; ?>
+					<?php endif; ?>
 				</div>
-				<p class="gp-order-note rev">Alegeți câte seturi doriți. În coș le puteți verifica sau modifica înainte de livrare și plată.</p>
+				<p class="gp-order-note rev"><?php echo fr_is_prelaunch() ? 'Lansăm în curând. Lasă-ți emailul și te anunțăm imediat ce poți comanda.' : 'Alegeți câte seturi doriți. În coș le puteți verifica sau modifica înainte de livrare și plată.'; ?></p>
 				<p class="gp-hero-meta rev">30 de provocări · Poster pentru amintiri</p>
 				<a class="gp-link rev" href="#contine">Descoperă ce conține <span class="c">›</span></a>
 			</div>
 			<div class="gp-hero-media rev">
-				<img src="<?php echo esc_url( $unbox . 'cutie_inchisa.png' ); ?>" width="1448" height="1086" alt="Cutia FamilyRound — 30 de provocări în familie" fetchpriority="high">
+				<img src="<?php echo esc_url( $u . 'product/complete_product.webp' ); ?>" width="1447" height="1087" alt="Cutia FamilyRound, cartonașele cu provocări, posterul pentru amintiri desfăcut și accesoriile incluse" fetchpriority="high">
 			</div>
 		</div>
 	</section>
@@ -61,15 +110,14 @@ while ( have_posts() ) :
 	<!-- 03 · DESCHIDEȚI CUTIA -->
 	<section class="gp-feature gp-sec" id="contine">
 		<div class="wrap">
-			<div class="gp-media rev"><img src="<?php echo esc_url( $unbox . 'cutie_plina.png' ); ?>" width="1426" height="1103" loading="lazy" alt="Cutia FamilyRound deschisă, cu teancul de cartonașe, washi tape și colțare foto"></div>
+			<div class="gp-media rev"><img src="<?php echo esc_url( $unbox . 'unbox-real.jpg' ); ?>" width="1400" height="1727" loading="lazy" alt="Cutia FamilyRound deschisă pe o masă de lemn, printre frunze de toamnă, cu teancul de cartonașe și scrisoarea de bun venit"></div>
 			<div class="gp-copy rev">
 				<h2>Deschideți cutia.<br>De aici începe totul.</h2>
 				<p>Înăuntru vă așteaptă 30 de provocări, fiecare cu o idee diferită de făcut împreună. Nu trebuie să vă pregătiți pentru toate. Alegeți una care vi se potrivește astăzi și vedeți unde vă duce.</p>
 				<ul class="gp-incl">
-					<li><span class="n">01</span><div><h3>30 de cartonașe cu provocări</h3><p>Fiecare, o idee diferită de făcut împreună.</p></div></li>
-					<li><span class="n">02</span><div><h3>Posterul „Amintiri care rămân"</h3><p>Locul unde adunați, pe parcurs, urmele experiențelor.</p></div></li>
-					<li><span class="n">03</span><div><h3>Accesorii pentru amintiri</h3><p>Washi tape și colțare foto negre, din carton.</p></div></li>
-					<li><span class="n">04</span><div><h3>Cartonașe pentru notițe</h3><p>Pentru un gând, o dată sau un nume de păstrat.</p></div></li>
+					<li><span class="n">01</span><div><h3>30 de cartonașe cu provocări</h3><p>De la o drumeție, până la o seară de poveste în sufragerie. Alegeți una — nu trebuie să le faceți în ordine.</p></div></li>
+					<li><span class="n">02</span><div><h3>Posterul „Amintiri care rămân"</h3><p>50 × 40 cm, gândit să rămână pe perete. Lipiți o fotografie, o frunză, un bilet — pe parcurs devine harta amintirilor voastre.</p></div></li>
+					<li><span class="n">03</span><div><h3>Accesorii pentru amintiri</h3><p>Washi tape, colțare foto și cartonașe pentru notițe — tot ce vă trebuie ca să lipiți o amintire, nu doar s-o păstrați într-un sertar.</p></div></li>
 				</ul>
 			</div>
 		</div>
@@ -80,15 +128,16 @@ while ( have_posts() ) :
 		<div class="gp-fan-head wrap rev">
 			<p class="gp-eyebrow">30 de idei de încercat</p>
 			<h2>Nu știți ce să faceți weekendul acesta?<br>Alegeți un cartonaș.</h2>
-			<p>Poate construiți un vehicul din lucrurile pe care le aveți acasă. Poate plecați cu trenul într-un loc nou. Sau poate refaceți o fotografie de familie de acum câțiva ani.</p>
+			<p>Poate construiți un vehicul din lucrurile pe care le aveți acasă. Poate plecați cu trenul într-un loc nou. Sau poate refaceți o fotografie de familie de acum câțiva ani. Unele provocări durează 10 minute, altele o după-amiază întreagă — unele se fac acasă, altele vă scot din casă.</p>
 		</div>
-		<div class="gp-fan">
-			<figure style="--i:-3;--d:3"><img src="<?php echo esc_url( $u . 'card-01.jpg' ); ?>" loading="lazy" alt="Drumeție în familie"></figure>
-			<figure style="--i:-1;--d:1"><img src="<?php echo esc_url( $u . 'card-15.jpg' ); ?>" loading="lazy" alt="O excursie cu trenul"></figure>
-			<figure style="--i:1;--d:1"><img src="<?php echo esc_url( $u . 'card-17.jpg' ); ?>" loading="lazy" alt="Construim un vehicul"></figure>
-			<figure style="--i:3;--d:3"><img src="<?php echo esc_url( $u . 'card-25.jpg' ); ?>" loading="lazy" alt="Restaurant familie"></figure>
+		<div class="gp-fan rev">
+			<?php foreach ( $fr_sample_cards as $i => $fr_card ) : ?>
+			<figure class="gp-fan-card" style="--r:<?php echo esc_attr( array( -6, 3, -3, 7, -5, 4 )[ $i ] ?? 0 ); ?>deg;--ty:<?php echo esc_attr( array( 6, -4, 8, -2, 5, -3 )[ $i ] ?? 0 ); ?>px">
+				<img src="<?php echo esc_url( $fr_card['src'] ); ?>" loading="lazy" alt="<?php echo esc_attr( $fr_card['alt'] ); ?>">
+			</figure>
+			<?php endforeach; ?>
 		</div>
-		<p class="gp-fan-note rev">Descoperă câteva dintre cele 30 de provocări. Și acestea sunt doar începutul.</p>
+		<p class="gp-fan-note rev">Fiecare cutie conține 30 de cartonașe ca acestea.</p>
 	</section>
 
 	<!-- 05 · POSTERUL AMINTIRILOR -->
@@ -99,33 +148,31 @@ while ( have_posts() ) :
 				<h2>Provocările trec. Amintirile rămân.</h2>
 				<p>După fiecare experiență, păstrați ceva pe poster. O fotografie, o frunză, un desen sau un bilet de la primul vostru drum cu trenul. Cu timpul, fiecare familie va avea un poster diferit. Pentru că fiecare familie are propria poveste.</p>
 			</div>
-			<div class="gp-beforeafter rev">
-				<figure><img src="<?php echo esc_url( $unbox . 'poster.png' ); ?>" loading="lazy" alt="Posterul Amintiri care rămân, gol"><figcaption>La început</figcaption></figure>
-				<figure><img src="<?php echo esc_url( $unbox . 'harta_plina.png' ); ?>" loading="lazy" alt="Posterul Amintiri care rămân, completat cu fotografii și amintiri"><figcaption>Pe parcurs</figcaption></figure>
+			<div class="gp-reveal rev" style="--pct:50%">
+				<div class="gp-reveal-frame">
+					<img class="gp-reveal-img gp-reveal-before" src="<?php echo esc_url( $unbox . 'harta_perete_gola.png' ); ?>" loading="lazy" alt="Posterul Amintiri care rămân, gol, agățat pe perete">
+					<img class="gp-reveal-img gp-reveal-after" src="<?php echo esc_url( $unbox . 'harta_perete2.png' ); ?>" loading="lazy" alt="Posterul Amintiri care rămân, completat cu fotografii și amintiri, agățat pe perete">
+					<div class="gp-reveal-line" aria-hidden="true"></div>
+				</div>
+				<p class="gp-reveal-hint">Urmăriți cum se umple posterul sau glisați singuri</p>
+				<div class="gp-reveal-control">
+					<span class="gp-reveal-label">La început</span>
+					<input type="range" class="gp-reveal-range" min="0" max="100" value="50" aria-label="Glisează pentru a vedea cum se umple posterul în timp">
+					<span class="gp-reveal-label">Pe parcurs</span>
+				</div>
 			</div>
 			<p class="gp-poster-end rev">La început este doar un poster. Apoi devine al vostru.</p>
-		</div>
-	</section>
-
-	<!-- 06 · ÎN VIAȚA REALĂ -->
-	<section class="gp-life gp-sec">
-		<div class="wrap">
-			<h2 class="rev">Cele mai frumoase povești încep de obicei cu „Hai să facem ceva".</h2>
-			<div class="gp-life-grid rev">
-				<figure class="wide"><img src="<?php echo esc_url( $unbox . 'lifestyle_masa.png' ); ?>" loading="lazy" alt="Cutia FamilyRound și posterul amintirilor pe masă, într-o casă reală"></figure>
-				<figure class="tall"><img src="<?php echo esc_url( $u . 'together-try.jpg' ); ?>" loading="lazy" alt="Un părinte și copilul făcând o activitate împreună"></figure>
-				<figure><img src="<?php echo esc_url( $unbox . 'cutie_maini.png' ); ?>" loading="lazy" alt="Cutia FamilyRound ținută în mâini"></figure>
-			</div>
 		</div>
 	</section>
 
 	<!-- 07 · UN CADOU PENTRU FAMILIE -->
 	<section class="gp-gift gp-sec">
 		<div class="wrap">
-			<div class="gp-media rev"><img src="<?php echo esc_url( $unbox . 'cutie_detaliu.png' ); ?>" loading="lazy" alt="Detaliu cu logo-ul auriu pe cutia FamilyRound"></div>
+			<div class="gp-media rev"><img src="<?php echo esc_url( $unbox . 'gift-box-real.jpg' ); ?>" width="1447" height="1930" loading="lazy" alt="Cutia FamilyRound închisă, cu logo auriu, așezată printre frunze de toamnă"></div>
 			<div class="gp-copy rev">
 				<h2>Ce le oferi unor oameni care au deja destule lucruri?</h2>
 				<p>Poate nu au nevoie de încă un obiect. Poate le-ar prinde bine 30 de motive să iasă din rutină, să descopere locuri, să râdă și să adune câteva amintiri noi.</p>
+				<p>Cutia rigidă, cu închidere magnetică și logo auriu, e gândită să stea la vedere — pe un raft de bibliotecă, nu într-un sertar.</p>
 				<a class="gp-pill" href="<?php echo esc_url( $cart_url ); ?>" data-fr-order-submit>Comandă acum</a>
 			</div>
 		</div>
@@ -152,6 +199,7 @@ while ( have_posts() ) :
 					<details><summary>Sunt toate provocările pentru acasă?</summary><p>Nu. Unele pot fi făcute acasă, iar altele propun ieșiri, explorări și mici excursii.</p></details>
 					<details><summary>Putem repeta o provocare?</summary><p>Sigur. Puteți reveni la experiențele care v-au plăcut și le puteți transforma în tradiții.</p></details>
 					<details><summary>Ce facem cu posterul?</summary><p>Păstrați pe el fotografii, desene, bilețele și mici amintiri ale provocărilor făcute împreună.</p></details>
+					<details><summary>Cum montăm posterul pe perete?</summary><p>Posterul vine împăturit în cutie. Înainte să-l montați, lăsați-l întins 24 de ore sub ceva greu — o carte groasă sau un covor — ca să se aplatizeze complet. După aceea, îl puteți prinde într-o ramă sau îl puteți lipi direct pe perete cu washi tape și puncte adezive, ca pe o ramă improvizată. Washi tape nu lasă urme pe perete.</p></details>
 					<details><summary>Ce conține exact cutia?</summary><p>30 de cartonașe cu provocări, posterul „Amintiri care rămân", accesorii pentru amintiri (washi tape și colțare foto) și cartonașe pentru notițe.</p></details>
 				</div>
 			</div>
@@ -185,8 +233,8 @@ while ( have_posts() ) :
 		'@context' => 'https://schema.org/',
 		'@type'    => 'Product',
 		'name'     => wp_strip_all_tags( get_the_title() ),
-		'image'    => array( $unbox . 'cutie_inchisa.png' ),
-		'description' => '30 de idei pentru timp petrecut împreună. Alegeți un cartonaș, faceți provocarea și păstrați amintirile pe posterul FamilyRound.',
+		'image'    => array( $u . 'product/complete_product.webp' ),
+		'description' => '30 de idei pentru timp petrecut împreună, pentru familii cu copii. Alegeți un cartonaș, faceți provocarea și păstrați amintirile pe posterul FamilyRound.',
 		'brand'    => array( '@type' => 'Brand', 'name' => 'FamilyRound' ),
 	);
 	if ( $product ) {

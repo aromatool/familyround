@@ -1,12 +1,13 @@
 (function () {
 	// The referral code opens a small, accessible path to public impact totals.
 	(function () {
-		var trigger = document.querySelector('[data-fr-impact-open]');
+		var triggers = document.querySelectorAll('[data-fr-impact-open]');
 		var dialog = document.getElementById('fr-impact-dialog');
-		if (!trigger || !dialog) return;
+		if (!triggers.length || !dialog) return;
 		var closeButton = dialog.querySelector('[data-fr-impact-close]');
 		var codeInput = dialog.querySelector('#fr-impact-code');
 		var closeTimer;
+		var lastTrigger = triggers[0];
 		var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 		var closeDialog = function () {
@@ -16,22 +17,25 @@
 			closeTimer = window.setTimeout(function () {
 				dialog.close();
 				delete dialog.dataset.state;
-				trigger.focus({ preventScroll: true });
+				lastTrigger.focus({ preventScroll: true });
 			}, reduceMotion.matches ? 120 : 220);
 		};
 
-		trigger.addEventListener('click', function () {
-			if (typeof dialog.showModal !== 'function') {
-				window.location.href = dialog.querySelector('form').action;
-				return;
-			}
-			window.clearTimeout(closeTimer);
-			dialog.dataset.state = 'opening';
-			dialog.showModal();
-			requestAnimationFrame(function () {
+		triggers.forEach(function (trigger) {
+			trigger.addEventListener('click', function () {
+				lastTrigger = trigger;
+				if (typeof dialog.showModal !== 'function') {
+					window.location.href = dialog.querySelector('form').action;
+					return;
+				}
+				window.clearTimeout(closeTimer);
+				dialog.dataset.state = 'opening';
+				dialog.showModal();
 				requestAnimationFrame(function () {
-					delete dialog.dataset.state;
-					if (codeInput) codeInput.focus({ preventScroll: true });
+					requestAnimationFrame(function () {
+						delete dialog.dataset.state;
+						if (codeInput) codeInput.focus({ preventScroll: true });
+					});
 				});
 			});
 		});
@@ -45,6 +49,45 @@
 			var bounds = dialog.getBoundingClientRect();
 			if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeDialog();
 		});
+	})();
+
+	// The floating "Distribuie" / "Vezi impactul" buttons stay out of the way
+	// until the visitor has scrolled past the hero — on mobile they'd otherwise
+	// sit fixed right over the last line of the intro copy from the first
+	// frame, before anyone has scrolled at all.
+	(function () {
+		var deferred = document.querySelectorAll('.fr-cta-deferred');
+		if (!deferred.length) return;
+		var reveal = function () {
+			deferred.forEach(function (el) { el.classList.add('is-visible'); });
+		};
+		var experiences = document.getElementById('experiente');
+		if (experiences && 'IntersectionObserver' in window) {
+			var io = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+						reveal();
+						io.disconnect();
+					}
+				});
+			}, { threshold: 0 });
+			io.observe(experiences);
+			return;
+		}
+		// No dedicated anchor on this page (e.g. the product page) — reveal
+		// once the visitor has scrolled roughly past the hero instead of
+		// showing the buttons immediately on top of it.
+		var revealed = false;
+		var onScroll = function () {
+			if (revealed) return;
+			if (window.scrollY > window.innerHeight * 1) {
+				revealed = true;
+				reveal();
+				window.removeEventListener('scroll', onScroll);
+			}
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		onScroll();
 	})();
 
 	// Sticky header shadow
@@ -220,14 +263,14 @@
 		if (!imgs.length) return;
 		var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (reduce) return;
+		if (window.innerWidth <= 720) {
+			imgs.forEach(function (img) { img.style.transform = 'scale(1.12)'; });
+			return;
+		}
 
 		var ticking = false;
 		var apply = function () {
 			ticking = false;
-			if (window.innerWidth <= 720) {
-				imgs.forEach(function (img) { img.style.transform = 'scale(1.12)'; });
-				return;
-			}
 			var vh = window.innerHeight;
 			imgs.forEach(function (img) {
 				var r = img.getBoundingClientRect();
@@ -260,6 +303,16 @@
 		var url = button.getAttribute('data-fr-share-url');
 		if (!url) return;
 
+		// Standalone triggers (e.g. the floating share button) have no status/field —
+		// flash the button's own label instead so a click never looks like it did nothing.
+		var flashButton = function (text) {
+			if (status) return;
+			var label = button.querySelector('span') || button;
+			var original = label.textContent;
+			label.textContent = text;
+			setTimeout(function () { label.textContent = original; }, 1800);
+		};
+
 		var copy = async function () {
 			try {
 				if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -269,9 +322,11 @@
 					if (!document.execCommand('copy')) throw new Error('copy failed');
 				}
 				if (status) status.textContent = 'Linkul a fost copiat. Îl poți trimite oriunde dorești.';
+				else flashButton('Copiat ✓');
 			} catch (error) {
 				if (field) field.select();
 				if (status) status.textContent = 'Selectează și copiază linkul din câmpul de mai sus.';
+				else flashButton('N-am putut copia');
 			}
 		};
 
@@ -314,8 +369,9 @@
 		};
 
 		items.forEach(function (item, index) {
-			item.addEventListener('mouseenter', function () { stop(); show(index); });
 			item.addEventListener('focus', function () { stop(); show(index); });
+			if (compact) return;
+			item.addEventListener('mouseenter', function () { stop(); show(index); });
 		});
 		chapters.addEventListener('mouseleave', start);
 		chapters.addEventListener('focusout', function (event) {

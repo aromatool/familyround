@@ -26,4 +26,12 @@ get_header();
 	</div>
 </section>
 
+<section class="fr-piggy-ownlink">
+	<div class="fr-container fr-piggy-ownlink-inner">
+		<h2>Nu trebuie să cumperi ca să dai timpul mai departe.</h2>
+		<p>Îți poți face propriul link chiar acum, gratuit, fără nicio comandă. Îl trimiți unei familii dragi sau îl postezi undeva — la prima ei comandă, FamilyRound pune 10 lei per joc în Pușculiță, fără cost pentru nimeni.</p>
+		<a class="fr-cta-ghost fr-cta-ghost--on-dark" href="<?php echo esc_url( home_url( '/da-timpul-mai-departe/' ) ); ?>">Generează-ți linkul →</a>
+	</div>
+</section>
+
 <?php get_footer(); ?>

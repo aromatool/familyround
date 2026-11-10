@@ -12,6 +12,17 @@ get_header();
  <?php else : ?><p>Linkul de dezabonare nu este valid.</p><?php endif; ?>
  </section>
  <?php else : ?>
+ <?php if ( isset( $_GET['code'] ) || isset( $_GET['token'] ) ) : ?>
+ <section class="fr-referral-impact-hero" aria-labelledby="fr-referral-title">
+  <div class="fr-container fr-referral-impact-intro">
+   <p class="fr-home-overline">Dă timpul mai departe</p>
+   <h1 id="fr-referral-title">Impactul tău <em>FamilyRound.</em></h1>
+  </div>
+  <div class="fr-container fr-referral-panel fr-referral-panel--wide">
+   <div data-fr-island="referral-program"></div>
+  </div>
+ </section>
+ <?php else : ?>
  <section class="fr-referral-hero" aria-labelledby="fr-referral-title">
   <div class="fr-container fr-referral-hero-grid">
    <div class="fr-referral-hero-copy">
@@ -21,11 +32,13 @@ get_header();
     <div class="fr-referral-formula"><span>5 lei <small>per joc</small></span><b>+</b><span>5 lei <small>per joc din prima comandă</small></span><b>=</b><span>10 lei <small>per joc, la prima recomandare</small></span></div>
    </div>
    <div class="fr-referral-panel">
-    <p class="fr-referral-panel-heading"><?php echo esc_html( isset( $_GET['code'] ) || isset( $_GET['token'] ) ? 'Impactul tău FamilyRound' : 'Linkul tău, pregătit de trimis' ); ?></p>
+    <p class="fr-referral-panel-heading">Linkul tău, pregătit de trimis</p>
     <div data-fr-island="referral-program"></div>
+    <button type="button" class="fr-referral-see-impact" data-fr-impact-open>Ai deja un link? Vezi impactul tău →</button>
    </div>
   </div>
  </section>
+ <?php endif; ?>
  <section class="fr-referral-how" aria-labelledby="fr-referral-how-title">
   <div class="fr-container">
    <div class="fr-referral-how-intro"><p class="fr-home-overline">Simplu, dintr-un gest</p><h2 id="fr-referral-how-title">Spui mai departe. <em>Cercul crește.</em></h2></div>
