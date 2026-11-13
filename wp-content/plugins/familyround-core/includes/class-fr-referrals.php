@@ -154,33 +154,43 @@ class FR_Referrals {
 		}
 		$link      = self::referral_link( $referrer->referral_code );
 		$stats = self::public_stats_link( $referrer->referral_code );
+		$map = add_query_arg( 'code', $referrer->referral_code, home_url( '/harta-familyround/' ) );
 		$wants_updates = rest_sanitize_boolean( $request->get_param( 'updates_opt_in' ) );
-		$share_text = "Vreau să-ți arăt ceva ce ne-a plăcut mult în familie: FamilyRound. Au niște jocuri care chiar te scot din rutină și vă apropie unii de alții. Și fac și ceva frumos — din fiecare comandă pun bani deoparte pentru o cauză. Dacă încerci prin linkul meu, la prima ta comandă pun chiar mai mult deoparte, fără să te coste nimic în plus:";
-		$whatsapp = fr_whatsapp_link( "{$share_text} {$link}" );
-		$facebook_share = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode( $link );
 
 		$updates_note = $wants_updates
 			? '<p style="margin:16px 0 0;color:#4c6253;font-size:13px;line-height:1.6;font-family: Arial, Helvetica, sans-serif;">Ai cerut și actualizări despre recomandări. Vei primi cel mult un email pe săptămână, numai când apar comenzi noi validate, cu link de dezabonare.</p>'
 			: '';
 		$html_body = '<div style="font-family: Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto;">'
-			. '<div style="padding: 34px 32px; background-color: #173b2b; text-align: center;">'
+			. '<div style="padding: 34px 32px; background-color: #102f23; text-align: center;">'
 			. '<img src="' . esc_url( get_theme_file_uri( 'assets/images/logo-icon.png' ) ) . '" width="44" height="42" alt="" style="display: block; margin: 0 auto 14px;">'
 			. '<p style="margin: 0; color: #d4b77d; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;">FAMILYROUND</p>'
-			. '<p style="margin: 10px 0 0; color: #fffaf0; font-family: Georgia, \'Times New Roman\', serif; font-size: 27px; line-height: 1.25;">Salut, ' . esc_html( $first_name ) . '!</p>'
+			. '<p style="margin: 10px 0 0; color: #fffaf0; font-family: Georgia, \'Times New Roman\', serif; font-size: 27px; line-height: 1.3;">Bucuria poate merge mai departe cu tine.</p>'
+			. '<p style="margin: 8px 0 0; color: #d8cab0; font-size: 14px;">Salut, ' . esc_html( $first_name ) . '! Linkul tău personal este gata.</p>'
 			. '</div>'
-			. '<div style="padding: 30px 32px; background-color: #f5efe3;">'
-			. '<p style="margin: 0 0 22px; color: #173b2b; font-size: 15px; line-height: 1.65;">Linkul tău personal e gata. Trimite-l unei familii dragi sau pune-l într-o postare — la prima ei comandă, FamilyRound pune încă 5 lei pentru fiecare joc eligibil în Pușculiță, fără cost în plus pentru nimeni.</p>'
-			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #173b2b;">CODUL TĂU</p>'
-			. '<p style="margin: 0 0 18px; padding: 14px 16px; background-color: #fffaf0; font-size: 21px; font-weight: 700; letter-spacing: .07em; color: #173b2b;">' . esc_html( $referrer->referral_code ) . '</p>'
-			. '<p style="margin: 0 0 20px; padding: 13px; background-color: #fffaf0; overflow-wrap: anywhere; font-size: 14px;"><a href="' . esc_url( $link ) . '" style="color: #173b2b; font-weight: 600;">' . esc_html( $link ) . '</a></p>'
-			. '<p style="margin: 0 0 20px; font-size: 14px; line-height: 2.7;"><a href="' . esc_url( $whatsapp ) . '" style="display: inline-block; padding: 10px 16px; background-color: #173b2b; color: #fffaf0; text-decoration: none; font-weight: 700;">Trimite pe WhatsApp</a></p>'
-			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #173b2b;">PENTRU FACEBOOK SAU INSTAGRAM</p>'
-			. '<p style="margin: 0 0 12px; color: #4c6253; font-size: 13px; line-height: 1.6;">Facebook nu ne lasă să-ți pregătim postarea automat — copiază textul de mai jos și lipește-l tu, împreună cu linkul, într-o postare sau în story:</p>'
-			. '<p style="margin: 0 0 14px; padding: 13px 16px; background-color: #fffaf0; color: #173b2b; font-size: 14px; line-height: 1.6;">' . esc_html( $share_text ) . ' ' . esc_html( $link ) . '</p>'
-			. '<p style="margin: 0 0 20px; font-size: 14px; line-height: 2.7;"><a href="' . esc_url( $facebook_share ) . '" style="display: inline-block; padding: 10px 16px; background-color: #ffffff; border: 1px solid #173b2b; color: #173b2b; text-decoration: none; font-weight: 700;">Deschide fereastra de distribuire Facebook</a></p>'
-			. '<p style="margin: 0; padding-top: 15px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6;">Codul tău poate fi folosit de oricâte familii noi; nimeni nu plătește în plus. Revino oricând să vezi recomandările validate: <a href="' . esc_url( $stats ) . '" style="color: #173b2b; font-weight: 700;">Vezi impactul codului →</a></p>'
+			. '<div style="padding: 30px 32px; background-color: #f5efe3; color: #102f23;">'
+			. '<p style="margin: 0 0 24px; text-align: center; font-size: 15px; line-height: 1.65;">Îți mulțumim că vrei să duci FamilyRound și către alte familii. Nu trebuie să cumperi un joc pentru a face parte din povestea noastră.</p>'
+			. '<div style="margin: 0 0 24px; padding: 24px; background-color: #fdfbf5; border: 1px solid #ecdfc0; border-radius: 14px; text-align: center;">'
+			. '<p style="margin: 0 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #8a6d3b;">FIECARE COMANDĂ PRIN LINKUL TĂU</p>'
+			. '<p style="margin: 0 0 8px; font-size: 40px; font-weight: 700; line-height: 1;">10 lei</p>'
+			. '<p style="margin: 0; font-size: 14px; color: #4c6253;">ajung în Pușculița FamilyRound, fără cost suplimentar pentru familia care cumpără.</p>'
+			. '</div>'
+			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em;">LINKUL TĂU PERSONAL</p>'
+			. '<p style="margin: 0 0 18px; padding: 13px 16px; background-color: #fdfbf5; border: 1px solid #ecdfc0; border-radius: 8px; overflow-wrap: anywhere; font-size: 14px; font-weight: 700;">' . esc_html( $link ) . '</p>'
+			. '<p style="margin: 0 0 10px;"><a href="' . esc_url( $stats ) . '" style="display: block; padding: 16px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-weight: 700; border-radius: 10px; text-align: center;">Dă linkul mai departe</a></p>'
+			. '<p style="margin: 0 0 28px; text-align: center; font-size: 13px; color: #4c6253;">Trimite-l pe WhatsApp, Facebook sau oricui crezi că i-ar plăcea jocul.</p>'
+			. '<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;"><tr>'
+			. '<td width="56" valign="top"><table role="presentation" cellpadding="0" cellspacing="0" style="background-color: #e9efe2; border-radius: 999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size: 22px; line-height: 48px;">⚓</td></tr></table></td>'
+			. '<td valign="top" style="padding-left: 14px;"><p style="margin: 0 0 4px; font-size: 16px; font-weight: 700;">Urmărește povestea linkului tău</p>'
+			. '<p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #4c6253;">Intră oricând pe site și descoperă pe hartă orașele în care au fost cumpărate jocuri prin recomandarea ta.</p>'
+			. '<a href="' . esc_url( $map ) . '" style="color: #102f23; font-weight: 700; font-size: 14px;">Vezi harta și impactul tău →</a></td>'
+			. '</tr></table>'
+			. '<div style="margin: 0 0 24px; padding: 20px; background-color: #ece4cf; border-radius: 12px; text-align: center;">'
+			. '<p style="margin: 0 0 6px; font-size: 16px; font-weight: 700;">Un link. Mai multe familii. Mai mult bine.</p>'
+			. '<p style="margin: 0; font-size: 13px; font-style: italic; color: #4c6253;">Fiecare recomandare poate deveni începutul unor amintiri frumoase.</p>'
+			. '</div>'
+			. '<p style="margin: 0 0 18px; text-align: center; font-style: italic; font-size: 14px;">Cu drag, Alexandru &amp; Alexandra</p>'
 			. $updates_note
-			. '<p style="margin: 20px 0 0; padding-top: 16px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6;">Urmărește-ne și pe <a href="https://www.facebook.com/familyround.ro" style="color: #173b2b; font-weight: 700;">Facebook</a> și <a href="https://www.instagram.com/familyround.ro" style="color: #173b2b; font-weight: 700;">Instagram</a> — povești noi de familie, în fiecare săptămână.</p>'
+			. '<p style="margin: 20px 0 0; padding-top: 16px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6; text-align: center;">Urmărește-ne și pe <a href="https://www.facebook.com/familyround.ro" style="color: #102f23; font-weight: 700;">Facebook</a> și <a href="https://www.instagram.com/familyround.ro" style="color: #102f23; font-weight: 700;">Instagram</a> — povești noi de familie, în fiecare săptămână.</p>'
 			. '</div></div>';
 
 		// The link is already created and real — never withhold it just because the

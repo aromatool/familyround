@@ -184,16 +184,20 @@ class FR_Email {
 			. '<p style="margin: 10px 0 0; color: #fffaf0; font-family: Georgia, \'Times New Roman\', serif; font-size: 27px; line-height: 1.25;">Comanda ta e pe drum, ' . esc_html( $first_name ) . '!</p>'
 			. '</div>'
 			. '<div style="padding: 30px 32px; background-color: #f5efe3;">'
-			. '<p style="margin: 0 0 22px; color: #102f23; font-size: 15px; line-height: 1.65;">Comanda ta #' . esc_html( $order->get_order_number() ) . ' a fost predată curierului' . ( $courier_name ? ' <strong>' . esc_html( $courier_name ) . '</strong>' : '' ) . '. În curând, provocările voastre vor fi gata de deschis.</p>'
+			. '<div style="margin: 0; padding: 28px; background-color: #fdfbf5; border: 1px solid #ecdfc0; border-radius: 14px; color: #102f23;">'
+			. '<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 18px;"><tr>'
+			. '<td width="56" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" style="background-color: #e9efe2; border-radius: 999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size: 24px; line-height: 48px;">📦</td></tr></table></td>'
+			. '<td valign="middle" style="padding-left: 14px; font-size: 15px; line-height: 1.6;">Comanda ta <strong>#' . esc_html( $order->get_order_number() ) . '</strong> a fost predată curierului' . ( $courier_name ? ' <strong>' . esc_html( $courier_name ) . '</strong>' : '' ) . '. În curând, provocările voastre vor fi gata de deschis.</td>'
+			. '</tr></table>'
 			. '<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em; color: #102f23;">' . ( $courier_name ? esc_html( strtoupper( $courier_name ) ) . ' — ' : '' ) . 'NUMĂR AWB</p>'
-			. '<p style="margin: 0 0 20px; padding: 14px 16px; background-color: #fffaf0; font-size: 21px; font-weight: 700; letter-spacing: .07em; color: #102f23;">' . esc_html( $result->awb ) . '</p>'
+			. '<p style="margin: 0 0 20px; padding: 14px 16px; background-color: #fffaf0; border: 1px solid #ecdfc0; border-radius: 8px; font-size: 21px; font-weight: 700; letter-spacing: .07em; color: #102f23;">' . esc_html( $result->awb ) . '</p>'
 			. ( $tracking_url
-				? '<p style="margin: 0 0 20px; font-size: 14px; line-height: 2.7;"><a href="' . esc_url( $tracking_url ) . '" style="display: inline-block; padding: 10px 16px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-weight: 700;">Urmărește coletul →</a></p>'
+				? '<p style="margin: 0 0 18px; text-align: center;"><a href="' . esc_url( $tracking_url ) . '" style="display: inline-block; padding: 13px 26px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-weight: 700; border-radius: 8px;">Urmărește coletul →</a></p>'
 				: '' )
 			. ( $invoice
-				? '<p style="margin: 0; padding-top: 15px; border-top: 1px solid #d8cab0; font-size: 14px;"><a href="' . esc_url( $invoice['url'] ) . '" style="color: #102f23; font-weight: 700;">Descarcă factura' . ( $invoice['label'] ? ' ' . esc_html( $invoice['label'] ) : '' ) . ' →</a></p>'
+				? '<p style="margin: 0; padding-top: 16px; border-top: 1px solid #ecdfc0; font-size: 14px; text-align: center;"><a href="' . esc_url( $invoice['url'] ) . '" style="color: #102f23; font-weight: 700;">📄 Descarcă factura' . ( $invoice['label'] ? ' ' . esc_html( $invoice['label'] ) : '' ) . ' →</a></p>'
 				: '' )
-			. '</div></div>';
+			. '</div></div></div>';
 
 		$sent = wp_mail(
 			$email,
@@ -219,9 +223,9 @@ class FR_Email {
 	}
 
 	/**
-	 * A few days after shipping, invite the family to share how the first
-	 * challenge went — and, naturally, their own referral link again. Skips
-	 * silently if the order was cancelled/refunded in the meantime.
+	 * A few days after shipping, thank the family, ask them to tag us if they
+	 * post about the game, and remind them their link doubles the cause's
+	 * contribution. Skips silently if the order was cancelled/refunded.
 	 */
 	public static function send_experience_invite( $order_id ) {
 		$order = wc_get_order( $order_id );
@@ -233,24 +237,54 @@ class FR_Email {
 			return;
 		}
 		$first_name = $order->get_billing_first_name() ?: 'prieten FamilyRound';
-		$link = class_exists( 'FR_Referrals' ) ? FR_Referrals::link_for_customer( $first_name, $email ) : '';
+		$referrer = class_exists( 'FR_Referrals' ) ? FR_Referrals::upsert_referrer_with_fresh_token( $first_name, $email ) : null;
+		$stats = $referrer && ! is_wp_error( $referrer ) ? FR_Referrals::public_stats_link( $referrer->referral_code ) : '';
 
-		$html = '<div style="font-family: Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto;">'
-			. '<div style="padding: 34px 32px; background-color: #102f23; text-align: center;">'
-			. '<img src="' . esc_url( get_theme_file_uri( 'assets/images/logo-icon.png' ) ) . '" width="44" height="42" alt="" style="display: block; margin: 0 auto 14px;">'
-			. '<p style="margin: 0; color: #d4b77d; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;">FAMILYROUND</p>'
-			. '<p style="margin: 10px 0 0; color: #fffaf0; font-family: Georgia, \'Times New Roman\', serif; font-size: 27px; line-height: 1.25;">Cum a fost prima provocare, ' . esc_html( $first_name ) . '?</p>'
+		global $wpdb;
+		$contributed = (float) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COALESCE(SUM(amount), 0) FROM {$wpdb->prefix}fr_piggybank_ledger WHERE order_id = %d AND status != 'cancelled'",
+				$order_id
+			)
+		);
+		$amount = $contributed > 0 ? number_format_i18n( $contributed, 0 ) : '5';
+
+		$html = '<div style="font-family: Georgia, \'Times New Roman\', serif; max-width: 560px; margin: 0 auto;">'
+			. '<div style="padding: 30px 32px; background-color: #102f23; text-align: center;">'
+			. '<p style="margin: 0 0 10px; color: #d4b77d; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 1.5px;">FAMILYROUND</p>'
+			. '<p style="margin: 0; color: #fffaf0; font-size: 24px; line-height: 1.35;">Ne arătați și nouă un strop din povestea voastră?</p>'
 			. '</div>'
-			. '<div style="padding: 30px 32px; background-color: #f5efe3;">'
-			. '<p style="margin: 0 0 18px; color: #102f23; font-size: 15px; line-height: 1.65;">Sperăm că ați scos deja un cartonaș din cutie și ați transformat o după-amiază obișnuită în ceva de povestit. Ne-ar plăcea să aflăm cum a fost — răspunde la acest email cu o poveste sau o poză, ne bucurăm de fiecare dată să le citim.</p>'
-			. ( $link
-				? '<p style="margin: 0 0 18px; color: #102f23; font-size: 15px; line-height: 1.65;">Dacă v-a plăcut, cel mai frumos lucru pe care îl poți face e să dai ideea mai departe. Iată din nou linkul tău personal:</p>'
-				. '<p style="margin: 0 0 20px; padding: 13px; background-color: #fffaf0; overflow-wrap: anywhere; font-size: 14px;"><a href="' . esc_url( $link ) . '" style="color: #102f23; font-weight: 600;">' . esc_html( $link ) . '</a></p>'
+			. '<img src="' . esc_url( get_theme_file_uri( 'assets/images/product/complete_product.webp' ) ) . '" width="560" alt="Cutia FamilyRound, cu cartonașele și posterul de amintiri" style="display: block; width: 100%; max-width: 560px;">'
+			. '<div style="padding: 36px 34px; background-color: #fffaf0; color: #102f23; font-size: 16px; line-height: 1.75;">'
+			. '<p style="margin: 0 0 20px;"><strong>Bună, ' . esc_html( $first_name ) . '!</strong></p>'
+			. '<p style="margin: 0 0 20px;">Ați apucat să descoperiți FamilyRound? Poate ați încercat deja o provocare sau poate jocul încă își așteaptă momentul potrivit.</p>'
+			. '<p style="margin: 0 0 24px;">Oricum ar fi, vrem să vă mulțumim încă o dată că ați ales să faceți parte din povestea noastră.</p>'
+			. '<div style="margin: 0 0 24px; padding: 24px; background-color: #f5efe3; border-radius: 14px;">'
+			. '<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 14px;"><tr>'
+			. '<td width="64" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" style="background-color: #fffaf0; border-radius: 999px;"><tr><td width="56" height="56" align="center" valign="middle" style="font-size: 28px; line-height: 56px;">📷</td></tr></table></td>'
+			. '<td valign="middle" style="padding-left: 16px; font-family: Arial, Helvetica, sans-serif; font-size: 17px; font-weight: 700;">Ne-ar bucura tare mult sprijinul vostru.</td>'
+			. '</tr></table>'
+			. '<p style="margin: 0 0 14px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6;">Dacă vă place ceea ce am creat, ne-ar ajuta enorm să împărtășiți și altor părinți experiența voastră. Poate fi o fotografie cu jocul, un story sau un moment dintr-o provocare.</p>'
+			. '<p style="margin: 0; padding: 12px 14px; background-color: #f3cf7e; border-radius: 8px; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 700; text-align: center;">Etichetați-ne pe Facebook sau Instagram: @familyround.ro</p>'
+			. '</div>'
+			. '<p style="margin: 0 0 24px;">Nu trebuie să fie nimic perfect. Ne plac tocmai momentele simple și autentice.</p>'
+			. ( $stats
+				? '<div style="margin: 0 0 28px; padding: 24px; background-color: #f5efe3; border-radius: 14px;">'
+				. '<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 14px;"><tr>'
+				. '<td width="64" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" style="background-color: #fffaf0; border-radius: 999px;"><tr><td width="56" height="56" align="center" valign="middle" style="font-size: 28px; line-height: 56px;">🫙</td></tr></table></td>'
+				. '<td valign="middle" style="padding-left: 16px; font-family: Arial, Helvetica, sans-serif; font-size: 17px; font-weight: 700;">Și mai e un fel prin care puteți face bine.</td>'
+				. '</tr></table>'
+				. '<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6;">Din comanda voastră, <strong style="background-color: #f3cf7e; padding: 1px 6px; border-radius: 5px;">' . esc_html( $amount ) . ' lei</strong> au mers deja în Pușculița FamilyRound. Dacă o altă familie comandă prin linkul vostru personal, contribuția pentru acel joc devine <strong style="background-color: #f3cf7e; padding: 1px 6px; border-radius: 5px;">10 lei</strong>, fără cost suplimentar pentru nimeni.</p>'
+				. '</div>'
+				. '<p style="margin: 0 0 28px; text-align: center;"><a href="' . esc_url( $stats ) . '" style="display: inline-block; padding: 14px 28px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-family: Arial, Helvetica, sans-serif; font-weight: 700; border-radius: 10px;">➚ Dă timpul mai departe →</a></p>'
 				: '' )
-			. '<p style="margin: 0; padding-top: 15px; border-top: 1px solid #d8cab0; color: #4c6253; font-size: 13px; line-height: 1.6;">Mulțumim că faci parte din cercul FamilyRound.</p>'
+			. '<p style="margin: 0 0 24px; font-style: italic; text-align: center; font-size: 15px; color: #3a5142;">Vă mulțumim că ne ajutați să creștem, pas cu pas, și să aducem mai multe familii împreună.</p>'
+			. '<p style="margin: 0 0 4px;">Cu drag,</p>'
+			. '<p style="margin: 0 0 2px; font-weight: 700;">Alexandru &amp; Alexandra</p>'
+			. '<p style="margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #4c6253;">FamilyRound</p>'
 			. '</div></div>';
 
-		if ( ! wp_mail( $email, 'Cum a fost prima provocare?', $html, array( 'Content-Type: text/html; charset=UTF-8' ) ) ) {
+		if ( ! wp_mail( $email, 'Ne arătați și nouă un strop din povestea voastră?', $html, array( 'Content-Type: text/html; charset=UTF-8' ) ) ) {
 			error_log( 'FR_Email::send_experience_invite — failed for order ' . $order_id );
 		}
 	}
@@ -387,29 +421,58 @@ class FR_Email {
 		$units = FR_Orders::eligible_units( $order );
 		$expected = $units * FR_Orders::SALE_AMOUNT;
 
+		$amount = $contributed > 0 ? $contributed : $expected;
+		if ( $amount <= 0 ) {
+			return;
+		}
+
 		if ( $plain_text ) {
-			echo "\n\n";
-			if ( $contributed > 0 ) {
-				echo "Din comanda ta am alocat {$contributed} lei în Pușculița FamilyRound. Suma este pusă deoparte de noi, fără cost în plus pentru tine.\n\n";
-			} elseif ( $expected > 0 ) {
-				echo "După confirmarea plății, vom pune deoparte {$expected} lei din comanda ta în Pușculița FamilyRound, fără cost în plus pentru tine.\n\n";
-			}
-			echo "Codul tău: {$referrer->referral_code}\n";
-			echo "Dă mai departe timpul vostru împreună — ajuți și o cauză bună, fără să te coste nimic: {$stats}\n";
+			echo "\n\nPUȘCULIȚA FAMILYROUND\n";
+			echo "Comanda ta a pus deja {$amount} lei deoparte.\n\n";
+			echo "Din comanda ta de acum, {$amount} lei merg deja în Pușculița FamilyRound — un mic gest care aduce timp împreună, fără cost în plus pentru tine.\n\n";
+			echo "Dacă o altă familie comandă prin linkul tău, în Pușculiță intră 10 lei.\n";
+			echo "Tu doar dai linkul mai departe. Noi dublăm binele făcut.\n\n";
+			echo "Linkul tău personal: {$referrer->referral_code} — {$stats}\n\n";
+			echo "Fără cost în plus pentru tine sau pentru familia care comandă.\n\n";
+			echo "1. Trimiți linkul · 2. O familie comandă · 3. În Pușculiță intră 10 lei\n\n";
+			echo "Îți mulțumim că ajuți timpul frumos să ajungă mai departe.\n";
 			return;
 		}
 		?>
-		<div style="margin: 30px 0; padding: 30px; background-color: #f5efe3; color: #102f23;">
-			<?php if ( $contributed > 0 ) : ?>
-				<p style="margin: 0 0 18px; padding-bottom: 18px; border-bottom: 1px solid #d8cab0; font-size: 16px; line-height: 1.6;">
-					<strong style="color: #102f23; font-size: 24px;"><?php echo esc_html( number_format_i18n( $contributed, 0 ) ); ?> lei</strong> puși deoparte din comanda ta în Pușculița FamilyRound. Îi alocăm noi, fără cost în plus pentru tine.
-				</p>
-			<?php elseif ( $expected > 0 ) : ?>
-				<p style="margin: 0 0 18px; padding-bottom: 18px; border-bottom: 1px solid #d8cab0; font-size: 15px; line-height: 1.6;">După confirmarea plății, vom pune deoparte <strong><?php echo esc_html( number_format_i18n( $expected, 0 ) ); ?> lei</strong> din comanda ta în Pușculiță, fără cost în plus pentru tine.</p>
-			<?php endif; ?>
-			<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em;">CODUL TĂU: <?php echo esc_html( $referrer->referral_code ); ?></p>
-			<p style="margin: 0 0 22px; font-size: 16px; line-height: 1.6;">Poate cunoști o familie căreia i-ar prinde bine mai mult timp împreună. Dă-i ideea mai departe — ajuți și o cauză bună, fără să te coste nimic.</p>
-			<p style="margin: 0;"><a href="<?php echo esc_url( $stats ); ?>" style="display: inline-block; padding: 12px 22px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-weight: 700;">Dă mai departe →</a></p>
+		<div style="margin: 30px 0; padding: 28px; background-color: #fdfbf5; border: 1px solid #ecdfc0; border-radius: 14px; color: #102f23;">
+			<p style="margin: 0 0 18px;"><span style="display: inline-block; padding: 6px 14px 6px 10px; background-color: #f5efe3; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .03em; color: #8a6d3b;"><span style="font-size: 18px; vertical-align: middle;">🫙</span> <span style="vertical-align: middle;">Pușculița FamilyRound</span></span></p>
+			<h3 style="margin: 0 0 14px; font-family: Georgia, 'Times New Roman', serif; font-weight: 700; font-size: 24px; line-height: 1.3;">Comanda ta a pus deja <span style="background-color: #f3cf7e; padding: 1px 8px; border-radius: 6px;"><?php echo esc_html( number_format_i18n( $amount, 0 ) ); ?> lei</span> deoparte</h3>
+			<p style="margin: 0 0 22px; font-size: 15px; line-height: 1.6;">Din comanda ta de acum, <?php echo esc_html( number_format_i18n( $amount, 0 ) ); ?> lei merg deja în <em>Pușculița FamilyRound</em> — un mic gest care aduce timp împreună, fără cost în plus pentru tine.</p>
+			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px; background-color: #e9efe2; border-radius: 10px;">
+				<tr>
+					<td width="64" align="center" valign="middle" style="padding: 16px 0 16px 18px;">
+						<table role="presentation" cellpadding="0" cellspacing="0" style="background-color: #fffaf0; border-radius: 999px;"><tr><td width="52" height="52" align="center" valign="middle" style="font-size: 28px; line-height: 52px;">🫙</td></tr></table>
+					</td>
+					<td style="padding: 18px 20px 18px 16px; font-size: 16px; line-height: 1.5;">Dacă o altă familie comandă prin linkul tău, în Pușculiță intră <strong style="background-color: #f3cf7e; padding: 1px 8px; border-radius: 6px; white-space: nowrap;">10 lei</strong>.</td>
+				</tr>
+			</table>
+			<p style="margin: 0 0 22px; font-style: italic; text-align: center; font-size: 15px; color: #3a5142;">Tu doar dai linkul mai departe. Noi dublăm binele făcut.</p>
+			<p style="margin: 0 0 7px; font-size: 12px; font-weight: 700; letter-spacing: .04em;">LINKUL TĂU PERSONAL</p>
+			<p style="margin: 0 0 18px; padding: 13px 16px; background-color: #fffaf0; border: 1px solid #ecdfc0; border-radius: 8px; overflow-wrap: anywhere; font-size: 15px; font-weight: 700;"><?php echo esc_html( $referrer->referral_code ); ?></p>
+			<p style="margin: 0 0 10px; text-align: center;"><a href="<?php echo esc_url( $stats ); ?>" style="display: inline-block; padding: 13px 26px; background-color: #102f23; color: #fffaf0; text-decoration: none; font-weight: 700; border-radius: 8px;"><span style="font-size: 16px; vertical-align: middle;">➤</span> <span style="vertical-align: middle;">Dă mai departe linkul tău →</span></a></p>
+			<p style="margin: 0 0 24px; text-align: center; font-size: 13px; color: #4c6253;">✓ Fără cost în plus pentru tine sau pentru familia care comandă.</p>
+			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px; border-top: 1px solid #ecdfc0; border-bottom: 1px solid #ecdfc0;">
+				<tr>
+					<td align="center" valign="top" style="width: 33%; padding: 20px 6px;">
+						<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 10px; background-color: #f5efe3; border-radius: 999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size: 24px; line-height: 48px;">📨</td></tr></table>
+						<p style="margin: 0; font-size: 13px; line-height: 1.4;"><strong>1.</strong> Trimiți linkul</p>
+					</td>
+					<td align="center" valign="top" style="width: 33%; padding: 20px 6px; border-left: 1px solid #ecdfc0; border-right: 1px solid #ecdfc0;">
+						<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 10px; background-color: #f5efe3; border-radius: 999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size: 24px; line-height: 48px;">🛒</td></tr></table>
+						<p style="margin: 0; font-size: 13px; line-height: 1.4;"><strong>2.</strong> O familie comandă</p>
+					</td>
+					<td align="center" valign="top" style="width: 33%; padding: 20px 6px;">
+						<table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 0 auto 10px; background-color: #f3cf7e; border-radius: 999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size: 24px; line-height: 48px;">🪙</td></tr></table>
+						<p style="margin: 0; font-size: 13px; line-height: 1.4;"><strong>3.</strong> Intră <strong>10 lei</strong></p>
+					</td>
+				</tr>
+			</table>
+			<p style="margin: 0; text-align: center; font-style: italic; font-size: 14px; color: #3a5142;">Îți mulțumim că ajuți timpul frumos să ajungă mai departe. <span style="font-size: 16px; vertical-align: middle;">🤍</span></p>
 		</div>
 		<?php
 	}

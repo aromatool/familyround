@@ -78,14 +78,24 @@ class FR_Referral_Digest {
 			$share = FR_Referrals::referral_link( $referrer->referral_code );
 			$unsubscribe = self::unsubscribe_url( $referrer );
 			$amount = number_format_i18n( $new_bonus, 0 );
-			$body = '<div style="max-width:600px;margin:auto;padding:36px;background:#fffaf0;color:#173b2b;font-family:Arial,sans-serif;line-height:1.6">'
-				. '<p style="color:#a07532;letter-spacing:2px;font-size:12px;font-weight:bold">FAMILYROUND · CERCUL TĂU</p>'
-				. '<h1 style="font:normal 32px Georgia,serif">Încă un pas dat mai departe.</h1>'
-				. '<p>Salut, ' . esc_html( $referrer->first_name ) . '! Prin codul tău s-au confirmat încă <strong>' . esc_html( $new_orders ) . ' ' . ( 1 === $new_orders ? 'comandă' : 'comenzi' ) . '</strong>. FamilyRound a pus deoparte încă <strong>' . esc_html( $amount ) . ' lei</strong> în Pușculiță.</p>'
-				. '<p>Sumele sunt alocate de noi; transferurile către cauze sunt prezentate separat.</p>'
-				. '<p><a href="' . esc_url( $stats ) . '" style="display:inline-block;background:#173b2b;color:#fffaf0;padding:12px 18px;text-decoration:none">Vezi impactul tău →</a></p>'
-				. '<p><a href="' . esc_url( $map ) . '">Vezi pe hartă unde au fost cumpărate jocurile</a><br><a href="' . esc_url( $share ) . '">Trimite mai departe linkul tău</a></p>'
-				. '<p style="border-top:1px solid #d8cab0;padding-top:16px;font-size:12px;color:#647667">Primești acest mesaj pentru că ai cerut actualizări despre recomandări. <a href="' . esc_url( $unsubscribe ) . '">Dezabonează-te</a>.</p></div>';
+			$body = '<div style="max-width:560px;margin:auto;font-family:Arial,Helvetica,sans-serif;">'
+				. '<div style="padding:34px 32px;background-color:#102f23;text-align:center;">'
+				. '<img src="' . esc_url( get_theme_file_uri( 'assets/images/logo-icon.png' ) ) . '" width="44" height="42" alt="" style="display:block;margin:0 auto 14px;">'
+				. '<p style="margin:0;color:#d4b77d;font-size:12px;font-weight:700;letter-spacing:1.5px;">FAMILYROUND · CERCUL TĂU</p>'
+				. '<p style="margin:10px 0 0;color:#fffaf0;font-family:Georgia,\'Times New Roman\',serif;font-size:27px;line-height:1.25;">Încă un pas dat mai departe.</p>'
+				. '</div>'
+				. '<div style="padding:30px 32px;background-color:#f5efe3;color:#102f23;">'
+				. '<div style="margin:0 0 20px;padding:28px;background-color:#fdfbf5;border:1px solid #ecdfc0;border-radius:14px;">'
+				. '<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 18px;"><tr>'
+				. '<td width="56" valign="middle"><table role="presentation" cellpadding="0" cellspacing="0" style="background-color:#f3cf7e;border-radius:999px;"><tr><td width="48" height="48" align="center" valign="middle" style="font-size:24px;line-height:48px;">🪙</td></tr></table></td>'
+				. '<td valign="middle" style="padding-left:14px;font-size:15px;line-height:1.6;">Salut, ' . esc_html( $referrer->first_name ) . '! Prin codul tău s-au confirmat încă <strong>' . esc_html( $new_orders ) . ' ' . ( 1 === $new_orders ? 'comandă' : 'comenzi' ) . '</strong>. FamilyRound a pus deoparte încă <strong style="background-color:#f3cf7e;padding:1px 8px;border-radius:6px;">' . esc_html( $amount ) . ' lei</strong> în Pușculiță.</td>'
+				. '</tr></table>'
+				. '<p style="margin:0 0 22px;font-size:13px;color:#4c6253;">Sumele sunt alocate de noi; transferurile către cauze sunt prezentate separat.</p>'
+				. '<p style="margin:0 0 10px;text-align:center;"><a href="' . esc_url( $stats ) . '" style="display:inline-block;padding:13px 26px;background-color:#102f23;color:#fffaf0;text-decoration:none;font-weight:700;border-radius:8px;">Vezi impactul tău →</a></p>'
+				. '<p style="margin:0;text-align:center;font-size:13px;"><a href="' . esc_url( $map ) . '" style="color:#102f23;font-weight:600;">Vezi pe hartă unde au fost cumpărate jocurile</a> · <a href="' . esc_url( $share ) . '" style="color:#102f23;font-weight:600;">Trimite mai departe linkul tău</a></p>'
+				. '</div>'
+				. '<p style="margin:0;padding-top:16px;border-top:1px solid #d8cab0;font-size:12px;color:#647667;">Primești acest mesaj pentru că ai cerut actualizări despre recomandări. <a href="' . esc_url( $unsubscribe ) . '" style="color:#647667;">Dezabonează-te</a>.</p>'
+				. '</div></div>';
 			if ( wp_mail( $referrer->email, 'Noutăți din cercul tău FamilyRound', $body, array( 'Content-Type: text/html; charset=UTF-8' ) ) ) {
 				$wpdb->update( $wpdb->prefix . 'fr_referrers', array( 'digest_count' => $count, 'digest_bonus' => $bonus, 'digest_last_sent_at' => current_time( 'mysql' ) ), array( 'id' => $referrer->id ) );
 			}

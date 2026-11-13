@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FR_THEME_VERSION', '1.59.29' );
+define( 'FR_THEME_VERSION', '1.59.30' );
 
 // Site is live, but real checkout stays off until the business has a CUI and
 // NETOPIA/SmartBill/Colete Online are configured with real credentials.
@@ -297,21 +297,36 @@ add_filter( 'woocommerce_cart_item_name', function ( $name, $cart_item ) {
 	return $name;
 }, 10, 2 );
 
-// Google Analytics 4 — skipped for admins so our own testing never pollutes real traffic data.
+// Google Analytics 4 — skipped for admins so our own testing never pollutes real
+// traffic data. Loading itself is gated on cookie consent (assets/cookie-consent.js) —
+// this only defines the loader, it never runs gtag on its own.
 add_action( 'wp_head', function () {
 	if ( current_user_can( 'manage_options' ) ) {
 		return;
 	}
 	?>
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-GXSS0XGV57"></script>
 	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
-		gtag('config', 'G-GXSS0XGV57');
+		window.frLoadGA = function () {
+			if ( window.frGALoaded ) return;
+			window.frGALoaded = true;
+			var s = document.createElement( 'script' );
+			s.async = true;
+			s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GXSS0XGV57';
+			document.head.appendChild( s );
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){ dataLayer.push( arguments ); }
+			window.gtag = gtag;
+			gtag( 'js', new Date() );
+			gtag( 'config', 'G-GXSS0XGV57' );
+		};
 	</script>
 	<?php
 }, 1 );
+
+// Registering this is just how footer.php's $fr_has_cookie_prefs check knows a
+// "Preferințe cookie" link has somewhere to reopen — the actual reopening is
+// handled client-side in cookie-consent.js via [data-fr-cookie-prefs].
+add_action( 'fr_open_cookie_preferences', '__return_null' );
 
 // Share previews for the FamilyRound brand home and individual experiences.
 add_action( 'wp_head', function () {
@@ -423,6 +438,12 @@ add_action( 'wp_enqueue_scripts', function () {
 	wp_enqueue_style( 'familyround-style', get_stylesheet_uri(), array( 'familyround-fonts' ), FR_THEME_VERSION );
 
 	wp_enqueue_script( 'familyround-interactions', get_theme_file_uri( 'assets/interactions.js' ), array(), FR_THEME_VERSION, true );
+
+	// GA itself already skips admins (see the frLoadGA definition above) — no
+	// point showing them a consent banner for a tracker that won't load anyway.
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_enqueue_script( 'familyround-cookie-consent', get_theme_file_uri( 'assets/cookie-consent.js' ), array(), FR_THEME_VERSION, true );
+	}
 	if ( function_exists( 'is_checkout' ) && is_checkout() && ! is_order_received_page() ) {
 		wp_enqueue_script( 'familyround-checkout', get_theme_file_uri( 'assets/checkout.js' ), array( 'jquery' ), FR_THEME_VERSION, true );
 		wp_localize_script( 'familyround-checkout', 'frCheckout', array(
