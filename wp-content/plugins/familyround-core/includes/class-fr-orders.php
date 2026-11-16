@@ -112,7 +112,10 @@ class FR_Orders {
 		}
 		self::ensure_order_item_snapshot( $order );
 		$units = self::eligible_units( $order );
-		self::sync_sale( $order, $units );
+		// Giveaway/promo orders: _fr_piggybank_excluded zeroes only the Pușculiță
+		// contribution so it stays stable even if the order's status changes
+		// again later. The map pin and referral bonus are real and stay as-is.
+		self::sync_sale( $order, $order->get_meta( '_fr_piggybank_excluded' ) ? 0 : $units );
 		self::record_map_order( $order, $units );
 		self::sync_referral( $order, $units );
 		if ( 'yes' === $order->get_meta( '_fr_ref_updates_opt_in' ) ) {
