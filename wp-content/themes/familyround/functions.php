@@ -20,14 +20,10 @@ function fr_is_prelaunch() {
 	return defined( 'FR_PRELAUNCH' ) && FR_PRELAUNCH;
 }
 
-// Real checkout (cart, address, courier quote) stays on, but with no card
-// at checkout at all — "Transfer bancar" is relabeled to "te contactăm pentru
-// plată și factură" and is the only payment option for delivery orders. No
-// money moves through the site; the order lands on-hold and FamilyRound
-// follows up by phone/email to actually collect payment once there's a CUI
-// to invoice against. Flip to false once NETOPIA + SmartBill are live — the
-// real card gateway and the real bank-transfer copy come back on their own.
-define( 'FR_PAYMENT_AWAITING_CUI', true );
+// PFA registered 20.11.2026 (CUI 55913255) — real invoicing is on. Flip back
+// to true only if the CUI is ever suspended/lost; this just toggles the
+// "Firmă" invoicing fields at checkout (class-fr-checkout.php).
+define( 'FR_PAYMENT_AWAITING_CUI', false );
 
 function fr_payment_awaiting_cui() {
 	return defined( 'FR_PAYMENT_AWAITING_CUI' ) && FR_PAYMENT_AWAITING_CUI;
