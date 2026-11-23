@@ -20,10 +20,11 @@ function fr_is_prelaunch() {
 	return defined( 'FR_PRELAUNCH' ) && FR_PRELAUNCH;
 }
 
-// PFA registered 20.11.2026 (CUI 55913255) — real invoicing is on. Flip back
-// to true only if the CUI is ever suspended/lost; this just toggles the
-// "Firmă" invoicing fields at checkout (class-fr-checkout.php).
-define( 'FR_PAYMENT_AWAITING_CUI', false );
+// PFA registered 20.11.2026 (CUI 55913255), but invoicing stays manual until
+// SmartBill (and the rest) is actually connected — flip to false once that's
+// done. This just toggles the "Firmă" invoicing fields at checkout
+// (class-fr-checkout.php).
+define( 'FR_PAYMENT_AWAITING_CUI', true );
 
 function fr_payment_awaiting_cui() {
 	return defined( 'FR_PAYMENT_AWAITING_CUI' ) && FR_PAYMENT_AWAITING_CUI;
