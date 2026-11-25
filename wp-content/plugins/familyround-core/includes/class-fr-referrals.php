@@ -37,6 +37,14 @@ class FR_Referrals {
 			return;
 		}
 
+		// LiteSpeed serves the homepage from its page cache for every visitor
+		// after the first hit on a given "?ref=CODE" URL — the Set-Cookie
+		// below (and this whole function) silently stops running for anyone
+		// but that first visitor until the cache entry expires. Force this
+		// one request to skip the cache so every referred visitor actually
+		// gets their attribution cookie.
+		do_action( 'litespeed_control_set_nocache', 'fr referral attribution cookie' );
+
 		$code = self::normalize_code( wp_unslash( $_GET['ref'] ) );
 
 		global $wpdb;
